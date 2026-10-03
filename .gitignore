@@ -15,10 +15,14 @@
 
 # next.js
 /.next/
+/web/.next/
 /out/
 
 # production
 /build
+
+# sync server database and uploads
+/.data/
 
 # misc
 .DS_Store

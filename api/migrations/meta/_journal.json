@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1791049419871,
+      "tag": "0000_stiff_zaran",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1791062660000,
+      "tag": "0001_drop_spec_json",
+      "breakpoints": true
+    }
+  ]
+}

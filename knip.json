@@ -1,0 +1,4 @@
+{
+  "$schema": "https://unpkg.com/knip/schema.json",
+  "entry": ["web/lib/guest-ui.tsx", "web/postcss.config.mjs"]
+}
