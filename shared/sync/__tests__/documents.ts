@@ -1,5 +1,5 @@
-import { DataplaneRoom, type Conn, type OpStore, type Snapshot } from "../../../api/room"
-import type { ClientMessage, LoggedBatch } from "../protocol"
+import { Document, type Conn, type OpStore, type Snapshot } from "../../../api/document"
+import { parseClientMessage, type ClientMessage, type LoggedBatch } from "../protocol"
 import { parseSchema, type Schema } from "../schema"
 
 const bugReport = parseSchema({
@@ -10,6 +10,7 @@ const bugReport = parseSchema({
     seen: { kind: "register", value: "string", maxLength: 10 },
     title: { kind: "text" },
     expected: { kind: "text" },
+    tasks: { kind: "list", fields: { text: { kind: "text" }, done: { kind: "register", value: "boolean" } } },
   },
 })
 
@@ -41,55 +42,59 @@ export class MemoryStore implements OpStore {
   }
 }
 
-export class RoomManager {
-  private rooms = new Map<string, DataplaneRoom>()
+export class DocumentManager {
+  private documents = new Map<string, Document>()
 
   constructor(private store: OpStore | null = null) {}
 
-  get(docId: string): DataplaneRoom | null {
+  get(docId: string): Document | null {
     const schema = schemaFor(docId)
     if (!schema) return null
-    let room = this.rooms.get(docId)
-    if (!room) {
-      room = new DataplaneRoom({ docId, schema, store: this.store })
-      this.rooms.set(docId, room)
+    let document = this.documents.get(docId)
+    if (!document) {
+      document = new Document({ docId, schema, store: this.store })
+      this.documents.set(docId, document)
     }
-    return room
+    return document
   }
 }
 
-export function createConnection(rooms: RoomManager, conn: Conn) {
-  let room: DataplaneRoom | null = null
+export function createConnection(documents: DocumentManager, conn: Conn) {
+  let document: Document | null = null
   let clientId: string | null = null
 
   return {
     message(raw: string) {
-      let msg: ClientMessage
+      let msg: ClientMessage | null
       try {
-        msg = JSON.parse(raw)
+        msg = parseClientMessage(JSON.parse(raw))
       } catch {
         conn.send({ type: "error", message: "invalid JSON" })
         return
       }
-      if (!room) {
+      if (!msg) {
+        conn.send({ type: "error", message: "invalid message" })
+        return
+      }
+      if (!document) {
         if (msg.type !== "hello") {
           conn.send({ type: "error", message: "expected hello" })
           return
         }
-        room = rooms.get(msg.docId)
-        if (!room) {
+        document = documents.get(msg.docId)
+        if (!document) {
           conn.send({ type: "error", message: `unknown doc ${msg.docId}` })
           conn.close()
           return
         }
         clientId = msg.clientId
-        room.join(conn, msg)
+        document.join(conn, msg)
         return
       }
-      room.receive(conn, clientId!, msg)
+      document.receive(conn, clientId!, msg)
     },
     close() {
-      if (room && clientId) room.leave(conn, clientId)
+      if (document && clientId) document.leave(conn, clientId)
     },
   }
 }

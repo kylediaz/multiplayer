@@ -7,7 +7,7 @@ import { drizzle, type BunSQLiteDatabase } from "drizzle-orm/bun-sqlite"
 import { migrate } from "drizzle-orm/bun-sqlite/migrator"
 import type { LoggedBatch } from "../shared/sync/protocol"
 import type { Schema } from "../shared/sync/schema"
-import type { Snapshot } from "./room"
+import type { Snapshot } from "./document"
 import * as schema from "./schema"
 import { documents, ops, revisions, snapshots } from "./schema"
 

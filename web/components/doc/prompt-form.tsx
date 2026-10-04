@@ -5,6 +5,15 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 
+type CreatedDocument = { id: string } | { error: string }
+
+function createdDocument(value: unknown): CreatedDocument | null {
+  if (typeof value !== "object" || value === null) return null
+  if ("id" in value && typeof value.id === "string") return { id: value.id }
+  if ("error" in value && typeof value.error === "string") return { error: value.error }
+  return null
+}
+
 export function PromptForm() {
   const router = useRouter()
   const [prompt, setPrompt] = useState("")
@@ -21,9 +30,9 @@ export function PromptForm() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ prompt }),
       })
-      const body = (await response.json()) as { id?: string; error?: string }
-      if (!response.ok || !body.id) {
-        setError(body.error ?? "The document could not be created.")
+      const body = createdDocument(await response.json())
+      if (!response.ok || !body || !("id" in body)) {
+        setError(body && "error" in body ? body.error : "The document could not be created.")
         return
       }
       router.push(`/v/${body.id}`)

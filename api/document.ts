@@ -32,10 +32,10 @@ const MEMORY_LOG_MAX = 1000
 const CATCH_UP_MAX = 2000
 
 /**
- * One document's authority. Register and list ops are applied in version order.
+ * The live document. Registers and list items are applied in version order.
  * Text ops are transformed against anything sequenced after the client's baseVersion.
  */
-export class DataplaneRoom {
+export class Document {
   readonly docId: string
   private schema: Schema
   private store: OpStore | null
@@ -76,7 +76,7 @@ export class DataplaneRoom {
     const existing = this.members.get(hello.clientId)
     if (existing && existing.conn !== conn) existing.conn.close()
 
-    const member: Member = { conn, clientId: hello.clientId, user: hello.user, presence: hello.presence ?? {} }
+    const member: Member = { conn, clientId: hello.clientId, user: hello.user, presence: hello.presence }
     this.members.set(hello.clientId, member)
 
     const peers = [...this.members.values()]

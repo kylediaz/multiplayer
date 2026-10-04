@@ -1,4 +1,5 @@
 import type { JSONValue } from "../doc"
+import type { ListEntry } from "../list"
 import type { PeerInfo, PresenceState, User } from "../protocol"
 
 type EngineKind = "handrolled"
@@ -14,19 +15,11 @@ export type EngineStatus = {
   buffered: number
 }
 
-export type NetworkControls = {
-  getLatency(): number
-  setLatency(ms: number): void
-  isOffline(): boolean
-  setOffline(offline: boolean): void
-}
-
 /** Everything the React layer knows about sync. */
 export interface SyncEngine {
   readonly kind: EngineKind
   readonly clientId: string
   readonly user: User
-  readonly network: NetworkControls
 
   connect(): void
   destroy(): void
@@ -38,6 +31,12 @@ export interface SyncEngine {
 
   getText(key: string): string
   editText(key: string, next: string, cursor?: number): void
+
+  getList(key: string): ListEntry[]
+  listInsert(key: string, index: number, data?: Record<string, JSONValue>): string
+  listDelete(key: string, id: string): void
+  listMove(key: string, id: string, toIndex: number): void
+  listUpdate(key: string, id: string, patch: Record<string, JSONValue>): void
 
   getPresence(): PresenceState
   setPresence(patch: Partial<PresenceState>): void

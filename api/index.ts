@@ -2,8 +2,8 @@ import { mkdirSync } from "node:fs"
 import path from "node:path"
 import type { ServerWebSocket } from "bun"
 import { DataplaneDb } from "./db"
-import { DataplaneRoom, type Conn } from "./room"
-import type { ClientMessage, ServerMessage } from "../shared/sync/protocol"
+import { Document, type Conn } from "./document"
+import { parseClientMessage, type ClientMessage, type ServerMessage } from "../shared/sync/protocol"
 import { parseSchema } from "../shared/sync/schema"
 
 const port = Number(process.env.PORT ?? 3003)
@@ -16,7 +16,7 @@ const viewsDir = path.join(dataDir, "views")
 const db = new DataplaneDb(path.join(dataDir, "dataplane.db"))
 
 type SocketData = { docId: string; clientId?: string; conn?: Conn }
-const rooms = new Map<string, DataplaneRoom>()
+const openDocuments = new Map<string, Document>()
 const emptyTimers = new Map<string, ReturnType<typeof setTimeout>>()
 
 function allowOrigin(request: Request): string | null {
@@ -45,27 +45,27 @@ function publicDocument(doc: NonNullable<ReturnType<DataplaneDb["getDocument"]>>
   }
 }
 
-function loadRoom(docId: string): DataplaneRoom | null {
-  const existing = rooms.get(docId)
+function loadDocument(docId: string): Document | null {
+  const existing = openDocuments.get(docId)
   if (existing) return existing
   const doc = db.getDocument(docId)
   if (!doc) return null
-  const room = new DataplaneRoom({ docId, schema: doc.schema, store: db })
-  room.onEmpty = () => {
+  const document = new Document({ docId, schema: doc.schema, store: db })
+  document.onEmpty = () => {
     const timer = setTimeout(() => {
       emptyTimers.delete(docId)
-      if (room.size === 0 && rooms.get(docId) === room) {
-        room.snapshot()
-        rooms.delete(docId)
+      if (document.size === 0 && openDocuments.get(docId) === document) {
+        document.snapshot()
+        openDocuments.delete(docId)
       }
     }, 5000)
     emptyTimers.set(docId, timer)
   }
-  rooms.set(docId, room)
-  return room
+  openDocuments.set(docId, document)
+  return document
 }
 
-function guestHtml(parentOrigin: string): string {
+function viewHtml(parentOrigin: string): string {
   const origin = JSON.stringify(parentOrigin)
   return `<!doctype html>
 <html>
@@ -89,7 +89,7 @@ function guestHtml(parentOrigin: string): string {
 <script>
 const parentOrigin = ${origin};
 window.host = {
-  post(message) { parent.postMessage({ ...message, source: "guest" }, parentOrigin); },
+  post(message) { parent.postMessage({ ...message, source: "view" }, parentOrigin); },
   onMessage(callback) {
     window.addEventListener("message", (event) => {
       if (event.origin !== parentOrigin) return;
@@ -100,10 +100,10 @@ window.host = {
   }
 };
 window.host.onMessage((message) => {
-  if (message.type !== "ready" || document.querySelector("script[data-guest]")) return;
+  if (message.type !== "ready" || document.querySelector("script[data-view]")) return;
   const script = document.createElement("script");
   script.src = "./main.js";
-  script.dataset.guest = "true";
+  script.dataset.view = "true";
   document.body.append(script);
 });
 </script>
@@ -138,7 +138,7 @@ async function serveView(request: Request, revisionId: string, rel: string): Pro
   const headers: Record<string, string> = { "content-security-policy": `frame-ancestors ${origins.join(" ")}` }
   if (rel === "" || rel === "index.html") {
     headers["content-type"] = "text/html; charset=utf-8"
-    return new Response(guestHtml(origin), { headers })
+    return new Response(viewHtml(origin), { headers })
   }
   const filePath = viewFile(revisionId, rel)
   if (!filePath) return new Response("not found", { status: 404 })
@@ -199,7 +199,7 @@ const server = Bun.serve<SocketData>({
       const origin = request.headers.get("origin")
       if (origin && !origins.includes(origin)) return new Response("forbidden", { status: 403 })
       const docId = decodeURIComponent(sync[1])
-      if (!loadRoom(docId)) return new Response("not found", { status: 404 })
+      if (!loadDocument(docId)) return new Response("not found", { status: 404 })
       if (bun.upgrade(request, { data: { docId } })) return
       return new Response("upgrade failed", { status: 400 })
     }
@@ -237,8 +237,8 @@ const server = Bun.serve<SocketData>({
       const docId = decodeURIComponent(one[1])
       const doc = db.getDocument(docId)
       if (!doc) return json(request, { error: "not found" }, 404)
-      const room = rooms.get(docId)
-      return json(request, publicDocument(doc, room?.version ?? doc.headVersion))
+      const document = openDocuments.get(docId)
+      return json(request, publicDocument(doc, document?.version ?? doc.headVersion))
     }
 
     const schemaRoute = url.pathname.match(/^\/v1\/documents\/([^/]+)\/schema$/)
@@ -259,9 +259,9 @@ const server = Bun.serve<SocketData>({
         return json(request, { error: err instanceof Error ? err.message : "invalid schema" }, 400)
       }
       db.updateSchema(docId, schema)
-      rooms.get(docId)?.setSchema(schema)
+      openDocuments.get(docId)?.setSchema(schema)
       const next = db.getDocument(docId)!
-      return json(request, publicDocument(next, rooms.get(docId)?.version ?? next.headVersion))
+      return json(request, publicDocument(next, openDocuments.get(docId)?.version ?? next.headVersion))
     }
 
     const views = url.pathname.match(/^\/v1\/documents\/([^/]+)\/views$/)
@@ -271,16 +271,19 @@ const server = Bun.serve<SocketData>({
   },
   websocket: {
     message(ws: ServerWebSocket<SocketData>, message) {
-      let parsed: ClientMessage
+      let parsed: ClientMessage | null
       try {
         const text = typeof message === "string" ? message : new TextDecoder().decode(message)
-        parsed = JSON.parse(text) as ClientMessage
+        parsed = parseClientMessage(JSON.parse(text))
       } catch {
+        parsed = null
+      }
+      if (!parsed) {
         ws.send(JSON.stringify({ type: "error", message: "invalid message" } satisfies ServerMessage))
         return
       }
-      const room = rooms.get(ws.data.docId)
-      if (!room) {
+      const document = openDocuments.get(ws.data.docId)
+      if (!document) {
         ws.send(JSON.stringify({ type: "error", message: "document is not loaded" } satisfies ServerMessage))
         return
       }
@@ -300,18 +303,18 @@ const server = Bun.serve<SocketData>({
         }
         ws.data.clientId = parsed.clientId
         ws.data.conn = conn
-        room.join(conn, parsed)
+        document.join(conn, parsed)
         return
       }
       if (!ws.data.clientId || !ws.data.conn) {
         ws.send(JSON.stringify({ type: "error", message: "hello required" } satisfies ServerMessage))
         return
       }
-      room.receive(ws.data.conn, ws.data.clientId, parsed)
+      document.receive(ws.data.conn, ws.data.clientId, parsed)
     },
     close(ws) {
       if (!ws.data.clientId || !ws.data.conn) return
-      rooms.get(ws.data.docId)?.leave(ws.data.conn, ws.data.clientId)
+      openDocuments.get(ws.data.docId)?.leave(ws.data.conn, ws.data.clientId)
     },
   },
 })

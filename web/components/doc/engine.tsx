@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useSyncExternalStore } from "react"
-import type { SyncEngine } from "../client/engine"
+import type { SyncEngine } from "@shared/sync/client/engine"
 
 const EngineContext = createContext<SyncEngine | null>(null)
 

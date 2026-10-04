@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { createConnection, RoomManager } from "./rooms"
+import { createConnection, DocumentManager } from "./documents"
 import { HandRolledEngine } from "../client/handrolled-engine"
 import type { TransportData } from "../client/transport"
 import { REGISTERS, TEXTS, runScenario, viewOf } from "./fuzz"
@@ -8,10 +8,10 @@ import { SimTransport, type ServerSide } from "./sim-transport"
 
 const DOC = "bug-report~fuzz"
 
-function syncServer(rooms: RoomManager): ServerSide {
+function syncServer(documents: DocumentManager): ServerSide {
   return {
     connect(toClient, close) {
-      const conn = createConnection(rooms, { send: (msg) => toClient(JSON.stringify(msg)), close })
+      const conn = createConnection(documents, { send: (msg) => toClient(JSON.stringify(msg)), close })
       return {
         message: (data: TransportData) => conn.message(data as string),
         close: () => conn.close(),
@@ -21,18 +21,18 @@ function syncServer(rooms: RoomManager): ServerSide {
 }
 
 function setup(r: Rng, n: number, maxLatency = 40) {
-  const rooms = new RoomManager(null)
-  const server = syncServer(rooms)
-  const engines = Array.from(
-    { length: n },
-    (_, i) =>
+  const documents = new DocumentManager(null)
+  const server = syncServer(documents)
+  const transports = Array.from({ length: n }, () => new SimTransport(server, r, maxLatency))
+  const engines = transports.map(
+    (transport, i) =>
       new HandRolledEngine({
         docId: DOC,
         user: { name: `u${i}`, color: "#000" },
-        transport: new SimTransport(server, r, maxLatency),
+        transport,
       })
   )
-  return { room: rooms.get(DOC)!, engines }
+  return { document: documents.get(DOC)!, engines, transports }
 }
 
 describe("hand-rolled engine", () => {
@@ -58,12 +58,12 @@ describe("hand-rolled engine", () => {
   })
 
   it("keeps a pending local value until it is acked (no flicker)", async () => {
-    const { engines } = setup(rng(2), 2, 0)
+    const { engines, transports } = setup(rng(2), 2, 0)
     const [a, b] = engines
     a.connect()
     b.connect()
     await vi.advanceTimersByTimeAsync(100)
-    a.network.setLatency(500)
+    transports[0].setLatency(500)
 
     b.setRegister("severity", "minor")
     a.setRegister("severity", "blocker")
@@ -88,28 +88,46 @@ describe("hand-rolled engine", () => {
     expect(b.getText("title")).toBe("Oh hello world")
   })
 
+  it("keeps items two people insert at the same time", async () => {
+    const { engines } = setup(rng(9), 2, 0)
+    const [a, b] = engines
+    a.connect()
+    b.connect()
+    await vi.advanceTimersByTimeAsync(100)
+    a.listInsert("tasks", 0, { text: "one", done: false })
+    b.listInsert("tasks", 0, { text: "two", done: false })
+    await vi.advanceTimersByTimeAsync(200)
+    const texts = (engine: (typeof engines)[number]) => engine.getList("tasks").map((item) => item.data.text).sort()
+    expect(texts(a)).toEqual(["one", "two"])
+    expect(texts(b)).toEqual(["one", "two"])
+    b.listDelete("tasks", b.getList("tasks").find((item) => item.data.text === "one")!.id)
+    await vi.advanceTimersByTimeAsync(200)
+    expect(texts(a)).toEqual(["two"])
+    expect(texts(b)).toEqual(["two"])
+  })
+
   it("rejects values the spec does not allow, server-side", async () => {
-    const { engines, room } = setup(rng(4), 1, 0)
+    const { engines, document } = setup(rng(4), 1, 0)
     const [a] = engines
     a.connect()
     await vi.advanceTimersByTimeAsync(100)
     a.setRegister("severity", "catastrophic")
     a.setRegister("nonexistent", true)
     await vi.advanceTimersByTimeAsync(100)
-    expect(room.state.registers).toEqual({})
+    expect(document.state.registers).toEqual({})
     expect(a.getRegister("severity")).toBeUndefined()
   })
 
   it("converges under random latency and offline periods", async () => {
     for (let seed = 1; seed <= 40; seed++) {
       const r = rng(seed)
-      const { engines, room } = setup(r, 3)
-      await runScenario(r, engines, 250)
+      const { engines, transports, document } = setup(r, 3)
+      await runScenario(r, engines, transports, 250)
 
-      expect(room.version, `seed ${seed} sequenced work`).toBeGreaterThan(20)
+      expect(document.version, `seed ${seed} sequenced work`).toBeGreaterThan(20)
       const expected = {
-        registers: Object.fromEntries(REGISTERS.map((k) => [k, room.state.registers[k] ?? null])),
-        texts: Object.fromEntries(TEXTS.map((k) => [k, room.state.texts[k] ?? ""])),
+        registers: Object.fromEntries(REGISTERS.map((k) => [k, document.state.registers[k] ?? null])),
+        texts: Object.fromEntries(TEXTS.map((k) => [k, document.state.texts[k] ?? ""])),
       }
       for (const engine of engines) {
         expect(engine.getStatus().inflight + engine.getStatus().buffered, `seed ${seed} pending`).toBe(0)

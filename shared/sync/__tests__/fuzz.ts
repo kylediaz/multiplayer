@@ -1,6 +1,7 @@
 import { vi } from "vitest"
 import type { SyncEngine } from "../client/engine"
 import type { Rng } from "./rng"
+import type { SimTransport } from "./sim-transport"
 
 export const REGISTERS = ["severity", "frequency", "regression", "seen"] as const
 export const TEXTS = ["title", "expected"] as const
@@ -45,15 +46,15 @@ export function viewOf(engine: SyncEngine) {
  * Drive N clients through random actions with random latency and offline
  * periods, then heal the network and let everything settle.
  */
-export async function runScenario(r: Rng, engines: SyncEngine[], steps: number) {
+export async function runScenario(r: Rng, engines: SyncEngine[], transports: SimTransport[], steps: number) {
   for (const e of engines) e.connect()
   await vi.advanceTimersByTimeAsync(500)
   for (let i = 0; i < steps; i++) {
-    const engine = r.pick(engines)
-    if (r.chance(0.03)) engine.network.setOffline(!engine.network.isOffline())
-    else randomAction(r, engine)
+    const index = r.int(engines.length)
+    if (r.chance(0.03)) transports[index].setOffline(!transports[index].isOffline())
+    else randomAction(r, engines[index])
     await vi.advanceTimersByTimeAsync(r.int(30))
   }
-  for (const e of engines) e.network.setOffline(false)
+  for (const transport of transports) transport.setOffline(false)
   await vi.advanceTimersByTimeAsync(5_000)
 }

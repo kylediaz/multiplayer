@@ -11,21 +11,28 @@ const SYSTEM = `You build a collaborative React app. Reply with one JSON object 
 Key is one of:
 - {"kind":"text"}
 - {"kind":"register","value":"boolean"|"string"|"number"}
+- {"kind":"list","fields":{"<field>": {"kind":"text"} or {"kind":"register","value":"boolean"|"string"|"number"}}}
 
 The source is one TSX file. It may import from "react", "sync", and "ui". Do not import anything else.
 From "sync":
-- useText(id) returns [string, (next: string) => void]
+- useText(id) returns [string, (next: string, cursor?: number) => void]. From an input onChange, pass event.target.value and event.target.selectionEnd so an edit inside repeated characters lands at the caret.
 - useRegister(id) returns [value | null, (value) => void]
+- useList(id) returns [items, { insert(index, data?), remove(id), move(id, index), update(id, patch) }]. Each item is { id, data }.
 Every id passed to those hooks must exist in schema.keys.
+A list is an ordered collection of items, such as tasks. Do not store a collection as JSON in a text key.
+insert adds an item and keeps it when someone else inserts at the same time. remove deletes one item. move reorders. update merges a patch into that item: updates to different fields both stay, and two updates of the same field keep the later one.
+Edit a text field on an item with useText(\`\${listId}/\${item.id}/\${field}\`) so typing merges. Edit a register field with useRegister on that same path.
 
 From "ui", these are the shadcn components. Style with their props and Tailwind className. Do not invent a second design system.
 - Button. onClick, variant ("default"|"outline"|"secondary"|"ghost"|"destructive"), size ("default"|"sm"|"lg"|"icon").
-- Input and Textarea. value, onChange, placeholder.
+- Input and Textarea. value, onChange, placeholder, field. onChange calls the useText setter with event.target.value and event.target.selectionEnd.
 - Label, Separator, Skeleton.
-- Checkbox and Switch. checked, onCheckedChange(checked: boolean).
-- Slider. value is a number array, onValueChange(next: number[]), min, max, step.
-- RadioGroup and RadioGroupItem. RadioGroup takes value and onValueChange. RadioGroupItem takes value.
-- Select, SelectTrigger, SelectValue, SelectContent, SelectItem. Select takes value and onValueChange. SelectItem takes value.
+- Checkbox and Switch. checked, onCheckedChange(checked: boolean), field.
+- Slider. value is a number array, onValueChange(next: number[]), min, max, step, field.
+- RadioGroup and RadioGroupItem. RadioGroup takes value, onValueChange, and field. RadioGroupItem takes value.
+- Select, SelectTrigger, SelectValue, SelectContent, SelectItem. Select takes value and onValueChange. SelectTrigger takes field. SelectItem takes value.
+- Toggle and ToggleGroup take field.
+Pass field on the control that edits a schema key, set to that key. Focusing it shows other people that this control is in use.
 - Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter.
 - Field, FieldLabel, FieldDescription, FieldGroup, FieldSet.
 - Toggle, ToggleGroup, ToggleGroupItem.

@@ -1,5 +1,5 @@
 import { dataplaneUrl } from "@/lib/dataplane"
-import { compileGuest } from "@/lib/compile-guest"
+import { compileView } from "@/lib/compile-view"
 import { generateDocument } from "@/lib/generate-spec"
 import type { Schema } from "@shared/sync/schema"
 
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
 
   let bundled
   try {
-    bundled = await compileGuest(generated.source)
+    bundled = await compileView(generated.source)
   } catch (err) {
     const message = err instanceof Error ? err.message : "The app failed to compile."
     return Response.json({ error: message.replace(/\u001b\[[0-9;]*m/g, "").slice(0, 500) }, { status: 502 })
@@ -49,7 +49,11 @@ async function createDocument(title: string, schema: Schema): Promise<{ id: stri
     return { error: "The dataplane is not running.", status: 503 }
   }
   if (!created.ok) return { error: "The dataplane rejected the document.", status: 502 }
-  return (await created.json()) as { id: string }
+  const body: unknown = await created.json()
+  if (typeof body !== "object" || body === null || !("id" in body) || typeof body.id !== "string") {
+    return { error: "The dataplane rejected the document.", status: 502 }
+  }
+  return { id: body.id }
 }
 
 async function publishApp(id: string, js: string, css: string): Promise<string | null> {

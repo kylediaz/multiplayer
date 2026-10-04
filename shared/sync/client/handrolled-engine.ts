@@ -1,8 +1,13 @@
-import { applyOp, emptyState, type DocState, type JSONValue, type Op } from "../doc"
-import type { Batch, ClientMessage, LoggedBatch, PresenceState, ServerMessage, User } from "../protocol"
+import { applyListOp, applyOp, emptyState, type DocState, type JSONValue, type ListRecord, type Op } from "../doc"
+import { positionAt, sortedItems, type ListEntry } from "../list"
+import { parseServerMessage, type Batch, type ClientMessage, type LoggedBatch, type PresenceState, type ServerMessage, type User } from "../protocol"
 import { apply as applyText, compose, fromDiff, isNoop, transform, type TextOp } from "../text-ot"
-import { Emitter, KeyedEmitter, randomId, type EngineStatus, type NetworkControls, type Peer, type SyncEngine } from "./engine"
+import { Emitter, KeyedEmitter, randomId, type EngineStatus, type Peer, type SyncEngine } from "./engine"
 import type { Transport, TransportData } from "./transport"
+
+const COLORS = ["#e5484d", "#f76b15", "#ffb224", "#30a46c", "#12a594", "#0090ff", "#3e63dd", "#8e4ec6", "#d6409f", "#978365"]
+
+const colorFor = (id: string) => COLORS[[...id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % COLORS.length]
 
 const same = (a: JSONValue | undefined, b: JSONValue | undefined) =>
   JSON.stringify(a ?? null) === JSON.stringify(b ?? null)
@@ -18,13 +23,13 @@ const same = (a: JSONValue | undefined, b: JSONValue | undefined) =>
  * and buffered ops (the ot.js client state machine, generalized to a doc of
  * many keys). Registers need no transform: re-deriving the view
  * from the new confirmed state replays them, and pending local values win
- * until acked, so remote updates never cause flicker.
+ * until acked, so remote updates never cause flicker. List items are ordered
+ * by position, so concurrent inserts and deletes both remain.
  */
 export class HandRolledEngine implements SyncEngine {
   readonly kind = "handrolled" as const
   readonly clientId = randomId(12)
   readonly user: User
-  readonly network: NetworkControls
 
   private docId: string
   private transport: Transport
@@ -44,6 +49,7 @@ export class HandRolledEngine implements SyncEngine {
   private keys = new KeyedEmitter()
   private registerCache = new Map<string, JSONValue | undefined>()
   private textCache = new Map<string, string>()
+  private listCache = new Map<string, { record: ListRecord; items: ListEntry[] }>()
 
   private peers = new Map<string, Peer>()
   private peerList: Peer[] = []
@@ -59,9 +65,8 @@ export class HandRolledEngine implements SyncEngine {
 
   constructor({ docId, user, transport }: { docId: string; user: User; transport: Transport }) {
     this.docId = docId
-    this.user = user
+    this.user = { name: user.name, color: colorFor(this.clientId) }
     this.transport = transport
-    this.network = transport
     transport.setHandlers({
       open: () => this.onOpen(),
       message: (data) => this.onMessage(data),
@@ -115,7 +120,14 @@ export class HandRolledEngine implements SyncEngine {
   }
 
   private onMessage(data: TransportData) {
-    const msg = JSON.parse(typeof data === "string" ? data : new TextDecoder().decode(data)) as ServerMessage
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(typeof data === "string" ? data : new TextDecoder().decode(data))
+    } catch {
+      return
+    }
+    const msg = parseServerMessage(parsed)
+    if (!msg) return
     switch (msg.type) {
       case "welcome":
         this.onWelcome(msg)
@@ -135,7 +147,7 @@ export class HandRolledEngine implements SyncEngine {
   }
 
   private onWelcome(msg: Extract<ServerMessage, { type: "welcome" }>) {
-    if (msg.snapshot) {
+    if ("snapshot" in msg) {
       this.confirmed = msg.snapshot
       this.version = msg.version
       if (this.inflight) {
@@ -146,8 +158,7 @@ export class HandRolledEngine implements SyncEngine {
       if (textOps) this.buffer = this.buffer.filter((op) => op.t !== "text")
       this.invalidateAll()
     } else {
-      const batches = msg.batches ?? []
-      for (const entry of batches) this.onEntry(entry)
+      for (const entry of msg.batches) this.onEntry(entry)
       if (this.inflight) this.sendInflight()
     }
     this.peers = new Map(msg.peers.map((p) => [p.clientId, p]))
@@ -205,9 +216,7 @@ export class HandRolledEngine implements SyncEngine {
     if (msg.presence === null) {
       this.peers.delete(msg.clientId)
     } else {
-      const user = msg.user ?? this.peers.get(msg.clientId)?.user
-      if (!user) return
-      this.peers.set(msg.clientId, { clientId: msg.clientId, user, presence: msg.presence })
+      this.peers.set(msg.clientId, { clientId: msg.clientId, user: msg.user, presence: msg.presence })
     }
     this.emitPeers()
   }
@@ -261,10 +270,23 @@ export class HandRolledEngine implements SyncEngine {
     return text
   }
 
+  private listView(key: string) {
+    const cached = this.listCache.get(key)
+    if (cached) return cached
+    const record: ListRecord = { ...(this.confirmed.lists[key] ?? {}) }
+    for (const op of this.pending()) if (op.key === key && op.t !== "set" && op.t !== "text") applyListOp(record, op)
+    const view = { record, items: sortedItems(record) }
+    this.listCache.set(key, view)
+    return view
+  }
+
+  getList = (key: string) => this.listView(key).items
+
   private invalidate(keys: Iterable<string>) {
     for (const key of keys) {
       this.registerCache.delete(key)
       this.textCache.delete(key)
+      this.listCache.delete(key)
       this.keys.emit(key, undefined)
     }
   }
@@ -272,6 +294,7 @@ export class HandRolledEngine implements SyncEngine {
   private invalidateAll() {
     this.registerCache.clear()
     this.textCache.clear()
+    this.listCache.clear()
     this.keys.emitAll(undefined)
   }
 
@@ -289,6 +312,8 @@ export class HandRolledEngine implements SyncEngine {
       } else {
         this.buffer.push(op)
       }
+    } else {
+      this.buffer.push(op)
     }
     this.invalidate([op.key])
     this.updateStatus()
@@ -307,6 +332,33 @@ export class HandRolledEngine implements SyncEngine {
     const op = fromDiff(this.getText(key), next, cursor)
     if (isNoop(op)) return
     this.pushLocal({ t: "text", key, op })
+  }
+
+  listInsert(key: string, index: number, data: Record<string, JSONValue> = {}) {
+    const id = randomId()
+    if (!this.synced) return id
+    this.pushLocal({ t: "list.insert", key, id, pos: positionAt(this.getList(key), index), data })
+    return id
+  }
+
+  listDelete(key: string, id: string) {
+    if (!this.synced) return
+    const item = this.listView(key).record[id]
+    if (!item || item.deleted) return
+    this.pushLocal({ t: "list.delete", key, id })
+  }
+
+  listMove(key: string, id: string, toIndex: number) {
+    const items = this.getList(key)
+    if (!this.synced || !items.some((item) => item.id === id)) return
+    const others = items.filter((item) => item.id !== id)
+    const index = Math.max(0, Math.min(others.length, toIndex))
+    this.pushLocal({ t: "list.move", key, id, pos: positionAt(others, index) })
+  }
+
+  listUpdate(key: string, id: string, patch: Record<string, JSONValue>) {
+    if (!this.synced || !this.listView(key).record[id]) return
+    this.pushLocal({ t: "list.update", key, id, patch })
   }
 
   // --------------------------------------------------------------- presence
