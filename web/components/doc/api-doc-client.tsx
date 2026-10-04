@@ -2,10 +2,6 @@
 
 import Link from "next/link"
 import { useCallback, useEffect, useRef, useSyncExternalStore } from "react"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { ArrowLeft01Icon } from "@hugeicons/core-free-icons"
-import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
 import { dataplaneSocketUrl, dataplaneUrl, type DataplaneDocument } from "@/lib/dataplane"
 import { cn } from "@/lib/utils"
 import { HandRolledEngine } from "@shared/sync/client/handrolled-engine"
@@ -56,9 +52,9 @@ function Shell({ document }: { document: DataplaneDocument }) {
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-6">
       <header className="flex flex-wrap items-center gap-3">
-        <Button nativeButton={false} variant="ghost" size="icon-sm" render={<Link href="/" aria-label="All documents" />}>
-          <HugeiconsIcon icon={ArrowLeft01Icon} />
-        </Button>
+        <Link href="/" aria-label="All documents" className="inline-flex size-6 items-center justify-center rounded-md text-sm text-muted-foreground">
+          ←
+        </Link>
         <div className="flex min-w-0 flex-col">
           <span className="truncate text-sm font-medium">{document.title}</span>
           <span className="truncate font-mono text-[10px] text-muted-foreground">{document.id}</span>
@@ -222,10 +218,10 @@ function ConnectionBadge() {
 function FormSkeleton() {
   return (
     <div className="flex flex-col gap-4 rounded-lg p-4 ring-1 ring-foreground/10">
-      <Skeleton className="h-5 w-48" />
-      <Skeleton className="h-3 w-72" />
+      <div className="h-5 w-48 animate-pulse rounded-md bg-muted" />
+      <div className="h-3 w-72 animate-pulse rounded-md bg-muted" />
       {Array.from({ length: 6 }, (_, i) => (
-        <Skeleton key={i} className="h-8 w-full" />
+        <div key={i} className="h-8 w-full animate-pulse rounded-md bg-muted" />
       ))}
     </div>
   )

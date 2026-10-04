@@ -2,8 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
+import { Button, Row, Stack, TextArea } from "@/components/genui"
 
 type CreatedDocument = { id: string } | { error: string }
 
@@ -44,21 +43,23 @@ export function PromptForm() {
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-3">
-      <Textarea
-        value={prompt}
-        onChange={(event) => setPrompt(event.target.value)}
-        placeholder="A two-player scoreboard with a reset button"
-        disabled={pending}
-        rows={5}
-        aria-label="Prompt"
-      />
-      <div className="flex items-center gap-3">
-        <Button type="submit" size="sm" disabled={pending || !prompt.trim()}>
-          {pending ? "Generating" : "Create document"}
-        </Button>
-        {error && <span className="text-xs text-muted-foreground">{error}</span>}
-      </div>
+    <form onSubmit={submit}>
+      <Stack gap={12}>
+        <TextArea
+          value={prompt}
+          onChange={setPrompt}
+          placeholder="A two-player scoreboard with a reset button"
+          disabled={pending}
+          rows={5}
+          aria-label="Prompt"
+        />
+        <Row gap={12} align="center">
+          <Button type="submit" disabled={pending || !prompt.trim()}>
+            {pending ? "Generating" : "Create document"}
+          </Button>
+          {error && <span className="text-xs text-muted-foreground">{error}</span>}
+        </Row>
+      </Stack>
     </form>
   )
 }

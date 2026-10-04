@@ -1,4 +1,7 @@
 {
   "$schema": "https://unpkg.com/knip/schema.json",
-  "entry": ["web/lib/view-ui.tsx", "web/lib/view-sync.ts", "web/postcss.config.mjs"]
+  "entry": ["web/lib/view-ui.tsx", "web/lib/view-sync.ts", "web/postcss.config.mjs"],
+  "ignoreIssues": {
+    "web/components/genui/**": ["exports", "types", "duplicates"]
+  }
 }

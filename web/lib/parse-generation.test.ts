@@ -40,25 +40,35 @@ export default function App() {
   })
 
   it("reports focus for a field on the built-in input", async () => {
-    const { js } = await compileView(`import { Input } from "ui"
+    const { js } = await compileView(`import { TextInput } from "ui"
 import { useText } from "sync"
 export default function App() {
   const [name, setName] = useText("name")
-  return <Input field="name" value={name} onChange={(event) => setName(event.target.value, event.target.selectionEnd)} />
+  return <TextInput field="name" value={name} onChange={(value, cursor) => setName(value, cursor)} />
 }`)
     expect(js).toContain("presence")
     expect(js).toContain("outline")
     expect(js).toContain("selectionEnd")
   })
 
-  it("bundles shadcn components and the classes the app uses", async () => {
-    const { js, css } = await compileView(`import { Button } from "ui"
+  it("renders list items whose fields are registers", async () => {
+    const { js } = await compileView(`import { TodoList } from "ui"
+import { useList } from "sync"
 export default function App() {
-  return <Button className="mt-8">Go</Button>
+  const [items, tasks] = useList("tasks")
+  return <TodoList todos={items} onTodoClick={(todo) => tasks.update(todo.id, { done: todo.data?.done !== true })} />
 }`)
-    expect(js).toContain("data-slot")
+    expect(js).toContain("useList")
+    expect(js).toContain("title")
+  })
+
+  it("bundles canvas components", async () => {
+    const { js, css } = await compileView(`import { Button, Stack } from "ui"
+export default function App() {
+  return <Stack gap={8} className="mt-8"><Button variant="primary">Go</Button></Stack>
+}`)
+    expect(js).toContain("Go")
     expect(css).toContain("mt-8")
-    expect(css).toContain("--primary")
   })
 
   it("rejects imports outside react, sync, and ui", async () => {

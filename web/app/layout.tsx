@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Multiplayer generated UI",
-  description: "Collaborative editing of LLM-generated shadcn UIs",
+  description: "Collaborative editing of LLM-generated UIs",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

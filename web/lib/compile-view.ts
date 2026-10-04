@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import { existsSync, mkdtempSync, rmSync, statSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import path from "node:path"
 import { createRequire } from "node:module"
@@ -78,7 +78,7 @@ function fromView(args: { namespace: string; importer: string }): boolean {
 function resolveWeb(rel: string): string | null {
   const base = path.join(webDir, rel)
   for (const candidate of [base, `${base}.tsx`, `${base}.ts`, path.join(base, "index.tsx"), path.join(base, "index.ts")]) {
-    if (existsSync(candidate)) return candidate
+    if (existsSync(candidate) && statSync(candidate).isFile()) return candidate
   }
   return null
 }
