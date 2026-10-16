@@ -1,0 +1,1 @@
+These are shadcn components. These should never be edited.
