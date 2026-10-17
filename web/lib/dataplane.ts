@@ -1,3 +1,4 @@
+import type { DocumentLang } from "@shared/lang"
 import type { Schema } from "@shared/sync/schema"
 
 export const dataplaneUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3003"
@@ -6,6 +7,7 @@ export type DataplaneDocument = {
   id: string
   title: string
   schema: Schema
+  type: DocumentLang
   viewRevision: string | null
   headVersion: number
 }

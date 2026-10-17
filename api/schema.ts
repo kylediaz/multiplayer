@@ -1,4 +1,5 @@
 import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core"
+import type { DocumentLang } from "../shared/lang"
 import type { Op, DocState } from "../shared/sync/doc"
 import type { Schema } from "../shared/sync/schema"
 
@@ -6,6 +7,7 @@ export const documents = sqliteTable("documents", {
   id: text("id").primaryKey(),
   title: text("title").notNull(),
   schemaJson: text("schema_json", { mode: "json" }).$type<Schema>().notNull(),
+  type: text("type", { enum: ["react", "openui"] }).$type<DocumentLang>().notNull().default("react"),
   viewRevision: text("view_revision"),
   createdAt: integer("created_at").notNull(),
 })

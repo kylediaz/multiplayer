@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest"
-import { compileView } from "./compile-view"
+import { openuiMode } from "./modes/openui/mode"
+import { reactMode } from "./modes/react/mode"
 import { parseGeneration } from "./parse-generation"
+
+async function reactBundle(source: string) {
+  const revision = await reactMode.publish(source)
+  if (!revision.ok) throw new Error(revision.problems.join("\n"))
+  return {
+    js: revision.files.find((file) => file.name === "main.js")?.body ?? "",
+    css: revision.files.find((file) => file.name === "main.css")?.body ?? "",
+  }
+}
 
 describe("parseGeneration", () => {
   it("reads a generated app", () => {
@@ -13,14 +23,54 @@ describe("parseGeneration", () => {
     expect(app.schema.keys.score).toMatchObject({ kind: "register", value: "number" })
   })
 
-  it("rejects a document with no default export", () => {
-    expect(() => parseGeneration({ title: "Nope", schema: { keys: {} }, source: "const App = () => null" })).toThrow(/default export/)
+  it("keeps source that has no default export", () => {
+    const app = parseGeneration({ title: "Nope", schema: { keys: {} }, source: "const App = () => null" })
+    expect(app.source).toBe("const App = () => null")
+  })
+
+  it("reads an OpenUI program", () => {
+    const app = parseGeneration({
+      title: "Hello",
+      lang: "openui",
+      schema: { keys: {} },
+      source: 'root = Card([title])\ntitle = TextContent("Hello", "large-heavy")',
+    })
+    expect(app.lang).toBe("openui")
+    expect(app.source).toContain("root = Card")
+  })
+
+  it("keeps an OpenUI program that does not parse", () => {
+    const app = parseGeneration({ title: "Nope", lang: "openui", schema: { keys: {} }, source: "nope" })
+    expect(app.source).toBe("nope")
   })
 })
 
-describe("compileView", () => {
+describe("publish", () => {
+  it("reports a missing default export", async () => {
+    const revision = await reactMode.publish("const App = () => null")
+    expect(revision.ok).toBe(false)
+    if (revision.ok) return
+    expect(revision.problems.join("\n")).toMatch(/default export/)
+  })
+
+  it("reports a forbidden import", async () => {
+    const revision = await reactMode.publish(`import fs from "node:fs"\nexport default function App(){ return <span>{String(fs.existsSync)}</span> }`)
+    expect(revision.ok).toBe(false)
+    if (revision.ok) return
+    expect(revision.problems.join("\n")).toMatch(/Cannot import/)
+  })
+
+  it("reports every OpenUI problem", async () => {
+    const revision = await openuiMode.publish('root = Card([a, b])\na = Missing("x")\nb = Missing("y")')
+    expect(revision.ok).toBe(false)
+    if (revision.ok) return
+    expect(revision.problems.length).toBeGreaterThan(1)
+    expect(revision.problems.some((problem) => problem.startsWith("a:"))).toBe(true)
+    expect(revision.problems.some((problem) => problem.startsWith("b:"))).toBe(true)
+  })
+
   it("bundles a component that reads its own register", async () => {
-    const { js } = await compileView(`import { useRegister } from "sync"
+    const { js } = await reactBundle(`import { useRegister } from "sync"
 export default function App() {
   const [score, setScore] = useRegister<number>("score")
   return <button onClick={() => setScore((score ?? 0) + 1)}>{score ?? 0}</button>
@@ -30,7 +80,7 @@ export default function App() {
   })
 
   it("bundles a list of items", async () => {
-    const { js } = await compileView(`import { useList } from "sync"
+    const { js } = await reactBundle(`import { useList } from "sync"
 export default function App() {
   const [items, list] = useList("tasks")
   return <button onClick={() => list.insert(items.length, { text: "one" })}>{items.length}</button>
@@ -40,7 +90,7 @@ export default function App() {
   })
 
   it("reports focus for a field on the built-in input", async () => {
-    const { js } = await compileView(`import { TextInput } from "ui"
+    const { js } = await reactBundle(`import { TextInput } from "ui"
 import { useText } from "sync"
 export default function App() {
   const [name, setName] = useText("name")
@@ -52,7 +102,7 @@ export default function App() {
   })
 
   it("renders list items whose fields are registers", async () => {
-    const { js } = await compileView(`import { TodoList } from "ui"
+    const { js } = await reactBundle(`import { TodoList } from "ui"
 import { useList } from "sync"
 export default function App() {
   const [items, tasks] = useList("tasks")
@@ -63,7 +113,7 @@ export default function App() {
   })
 
   it("bundles canvas components", async () => {
-    const { js, css } = await compileView(`import { Button, Stack } from "ui"
+    const { js, css } = await reactBundle(`import { Button, Stack } from "ui"
 export default function App() {
   return <Stack gap={8} className="mt-8"><Button variant="primary">Go</Button></Stack>
 }`)
@@ -71,9 +121,10 @@ export default function App() {
     expect(css).toContain("mt-8")
   })
 
-  it("rejects imports outside react, sync, and ui", async () => {
-    await expect(
-      compileView(`import fs from "node:fs"\nexport default function App(){ return <span>{String(fs.existsSync)}</span> }`)
-    ).rejects.toThrow(/Cannot import/)
+  it("stores an OpenUI program without a bundle", async () => {
+    const revision = await openuiMode.publish('root = Card([title])\ntitle = TextContent("Hello", "large-heavy")')
+    expect(revision.ok).toBe(true)
+    if (!revision.ok) return
+    expect(revision.files.map((file) => file.name)).toEqual(["source.txt"])
   })
 })

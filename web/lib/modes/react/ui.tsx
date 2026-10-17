@@ -1,7 +1,7 @@
 "use client"
 
 import { useSyncExternalStore, type ComponentProps, type FocusEvent, type ReactNode } from "react"
-import { Checkbox as CheckboxBase, Select as SelectBase, TextArea as TextAreaBase, TextInput as TextInputBase, Toggle as ToggleBase } from "@/components/genui"
+import { Checkbox as CheckboxBase, Select as SelectBase, TextArea as TextAreaBase, TextInput as TextInputBase, Toggle as ToggleBase } from "./kit"
 import { cn } from "@/lib/utils"
 import { shellMessage } from "@/lib/shell-messages"
 
@@ -38,10 +38,8 @@ export {
   TodoList,
   TodoListCard,
   UsageBar,
-  useCanvasAction,
-  useCanvasState,
   useHostTheme,
-} from "@/components/genui"
+} from "./kit"
 
 type Host = {
   post(message: Record<string, unknown>): void

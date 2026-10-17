@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import { ApiDocClient } from "@/components/doc/api-doc-client"
 import { fetchDocument } from "@/lib/dataplane"
+import { readRevisionFile } from "@/lib/modes/revision-file"
 
 export default async function DataplaneDocPage({ params }: { params: Promise<{ docId: string }> }) {
   const { docId } = await params
@@ -15,5 +16,6 @@ export default async function DataplaneDocPage({ params }: { params: Promise<{ d
     )
   }
   if (!document) notFound()
-  return <ApiDocClient document={document} />
+  const source = document.viewRevision ? readRevisionFile(document.viewRevision, "source.txt") : null
+  return <ApiDocClient document={document} source={source} />
 }

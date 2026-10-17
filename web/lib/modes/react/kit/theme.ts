@@ -4,7 +4,6 @@ import { useSyncExternalStore } from "react"
 
 export type Color = "gray" | "purple" | "green" | "yellow" | "cyan" | "pink" | "blue" | "orange" | "red"
 export type CategoryPalette = Readonly<Record<Color, string>>
-export type CanvasHostThemeBrand = "cursor" | "grok"
 
 export type CanvasPalette = {
   readonly foreground: string
@@ -46,7 +45,6 @@ export type CanvasTokens = {
 
 export type CanvasHostTheme = CanvasTokens & {
   readonly kind: string
-  readonly brand: CanvasHostThemeBrand
   readonly tokens: CanvasTokens
   readonly palette: CanvasPalette
   readonly radius: typeof canvasRadius
@@ -111,8 +109,6 @@ function palette(base: string, surfaces: { editor: string; chrome: string; sideb
 
 export const canvasPaletteDark = palette("#F0F0F0", { editor: "#181818", chrome: "#141414", sidebar: "#141414" }, "#599CE7", "#0E0E0E")
 export const canvasPaletteLight = palette("#141414", { editor: "#FCFCFC", chrome: "#F3F3F3", sidebar: "#F3F3F3" }, "#1F6FEB", "#FFFFFF")
-export const canvasPaletteGrokDark = canvasPaletteDark
-export const canvasPaletteGrokLight = canvasPaletteLight
 
 export const categoryPaletteDark: CategoryPalette = {
   gray: "#9A9A9A",
@@ -126,8 +122,6 @@ export const categoryPaletteDark: CategoryPalette = {
   red: "#C04848",
 }
 export const categoryPaletteLight: CategoryPalette = categoryPaletteDark
-export const categoryPaletteGrokDark = categoryPaletteDark
-export const categoryPaletteGrokLight = categoryPaletteLight
 export const colorPalette = categoryPaletteDark
 
 export const usageColorSequence: readonly Color[] = ["gray", "purple", "green", "yellow", "pink", "blue", "orange", "cyan", "red"]
@@ -168,38 +162,6 @@ export const chartColorSequence: readonly string[] = [
   chartPalette.lightBlue,
 ]
 
-export const chartPaletteGrok: ChartPalette = {
-  green: "#00C972E8",
-  darkGreen: "#009957E0",
-  lightGreen: "#38D591E0",
-  mintGreen: "#78E2B4E0",
-  blue: "#1084FEE0",
-  lightBlue: "#459FFEE0",
-  indigo: "#0C64C1F0",
-  lightIndigo: "#80BEFEE0",
-  purple: "#9159FEF0",
-  lightPurple: "#A97EFEE0",
-  warmPink: "#FF309BE0",
-  lightPink: "#FF5EB1E0",
-  brightOrange: "#FF6700E0",
-  deepOrange: "#C24E00E0",
-  goldenYellow: "#FF9800E0",
-  darkAmber: "#FF263CE0",
-  warmPeach: "#FF8838E0",
-  vibrantTeal: "#00BCA6E0",
-  muted: "#777777E0",
-  neutralLine: "#777777D0",
-}
-
-export const chartColorSequenceGrok: readonly string[] = [
-  chartPaletteGrok.blue,
-  chartPaletteGrok.brightOrange,
-  chartPaletteGrok.purple,
-  chartPaletteGrok.green,
-  chartPaletteGrok.warmPink,
-  chartPaletteGrok.goldenYellow,
-]
-
 export const canvasTypography = {
   fontFamily: "inherit",
   h1: { fontSize: "24px", lineHeight: "30px", fontWeight: 590 },
@@ -210,19 +172,8 @@ export const canvasTypography = {
 } as const
 
 export const canvasFontFamilyCursor = "inherit" as const
-export const canvasFontFamilyGrok = "inherit"
 export const canvasSpacing = { "0.5": 2, "1": 4, "1.5": 6, "2": 8, "2.5": 10, "3": 12, "3.5": 14, "4": 16, "4.5": 18, "5": 20, "6": 24, "7": 28, "8": 32, "9": 36, "10": 40 } as const
 export const canvasRadius = { none: 0, xs: 2, sm: 4, md: 6, lg: 8, xl: 12, full: 9999 } as const
-export const canvasRadiusGrok = { none: 0, xs: 4, sm: 6, md: 8, lg: 10, xl: 14, full: 9999 }
-export const canvasTypographyGrok = canvasTypography
-
-export function canvasRadiusForBrand(brand: CanvasHostThemeBrand) {
-  return brand === "grok" ? canvasRadiusGrok : canvasRadius
-}
-
-export function canvasTypographyForBrand(brand: CanvasHostThemeBrand) {
-  return brand === "grok" ? canvasTypographyGrok : canvasTypography
-}
 
 function tokensFrom(paletteValue: CanvasPalette, category: CategoryPalette): CanvasTokens {
   return {
@@ -261,26 +212,18 @@ function tokensFrom(paletteValue: CanvasPalette, category: CategoryPalette): Can
 export const canvasTokens = tokensFrom(canvasPaletteDark, categoryPaletteDark)
 export const canvasTokensLight = tokensFrom(canvasPaletteLight, categoryPaletteLight)
 
-export function chartThemeForBrand(brand: CanvasHostThemeBrand) {
-  return brand === "grok"
-    ? { palette: chartPaletteGrok, sequence: chartColorSequenceGrok }
-    : { palette: chartPalette, sequence: chartColorSequence }
-}
-
 function hostTheme(kind: string): CanvasHostTheme {
   const dark = kind !== "light" && kind !== "hc-light"
   const paletteValue = dark ? canvasPaletteDark : canvasPaletteLight
   const tokens = dark ? canvasTokens : canvasTokensLight
-  const chart = chartThemeForBrand("cursor")
   return {
     ...tokens,
     kind,
-    brand: "cursor",
     tokens,
     palette: paletteValue,
     radius: canvasRadius,
     typography: canvasTypography,
-    chart,
+    chart: { palette: chartPalette, sequence: chartColorSequence },
   }
 }
 

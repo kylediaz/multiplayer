@@ -7,7 +7,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 loadEnvConfig(root)
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["esbuild", "postcss", "@tailwindcss/postcss", "@tailwindcss/node", "@tailwindcss/oxide", "lightningcss", "tailwindcss"],
+  serverExternalPackages: ["esbuild", "postcss", "@tailwindcss/postcss", "@tailwindcss/node", "@tailwindcss/oxide", "lightningcss", "tailwindcss", "@openuidev/lang-core", "@openuidev/react-lang"],
   allowedDevOrigins: ["kyle-web.ngrok.app"],
   experimental: {
     externalDir: true,

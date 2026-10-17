@@ -1,6 +1,7 @@
 allowBuilds:
   esbuild: true
   unrs-resolver: true
+  "@openuidev/lang-core": true
 minimumReleaseAgeExclude:
   - '@types/node@24.19.1'
   - react-resizable-panels@4.14.2

@@ -5,6 +5,7 @@ import { Database } from "bun:sqlite"
 import { and, eq, gt, max } from "drizzle-orm"
 import { drizzle, type BunSQLiteDatabase } from "drizzle-orm/bun-sqlite"
 import { migrate } from "drizzle-orm/bun-sqlite/migrator"
+import type { DocumentLang } from "../shared/lang"
 import type { LoggedBatch } from "../shared/sync/protocol"
 import type { Schema } from "../shared/sync/schema"
 import type { Snapshot } from "./document"
@@ -15,6 +16,7 @@ export type DocumentRow = {
   id: string
   title: string
   schema: Schema
+  type: DocumentLang
   viewRevision: string | null
   createdAt: number
   headVersion: number
@@ -32,13 +34,14 @@ export class DataplaneDb {
     migrate(this.db, { migrationsFolder: path.join(path.dirname(fileURLToPath(import.meta.url)), "migrations") })
   }
 
-  createDocument(doc: { id: string; title: string; schema: Schema }): DocumentRow {
+  createDocument(doc: { id: string; title: string; schema: Schema; type?: DocumentLang }): DocumentRow {
     this.db
       .insert(documents)
       .values({
         id: doc.id,
         title: doc.title,
         schemaJson: doc.schema,
+        type: doc.type ?? "react",
         createdAt: Date.now(),
       })
       .run()
@@ -52,6 +55,7 @@ export class DataplaneDb {
       id: row.id,
       title: row.title,
       schema: row.schemaJson,
+      type: row.type,
       viewRevision: row.viewRevision,
       createdAt: row.createdAt,
       headVersion: this.headVersion(id),

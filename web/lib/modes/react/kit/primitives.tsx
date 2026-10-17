@@ -270,11 +270,12 @@ export type ButtonProps = {
   variant?: "primary" | "secondary" | "ghost"
   disabled?: boolean
   type?: "button" | "submit" | "reset"
+  pressed?: boolean
   style?: CSSProperties
   onClick?: () => void
 }
 
-export function Button({ children, variant = "primary", disabled, type = "button", style, onClick }: ButtonProps): JSX.Element {
+export function Button({ children, variant = "primary", disabled, type = "button", pressed, style, onClick }: ButtonProps): JSX.Element {
   const theme = useHostTheme()
   const background = variant === "primary" ? theme.accent.control : variant === "secondary" ? theme.fill.secondary : "transparent"
   const color = variant === "primary" ? theme.text.onAccent : theme.text.primary
@@ -283,6 +284,7 @@ export function Button({ children, variant = "primary", disabled, type = "button
     <button
       type={type}
       disabled={disabled}
+      aria-pressed={pressed}
       onClick={onClick}
       style={mergeStyle(
         {

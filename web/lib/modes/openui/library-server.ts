@@ -1,0 +1,36 @@
+import { buildApplessLibrary, type ApplessRenderers } from "./contract"
+
+const unused = () => null
+
+export const cupertinoLibrary = buildApplessLibrary({
+  Card: unused,
+  CardHeader: unused,
+  TextContent: unused,
+  TextCallout: unused,
+  ListItem: unused,
+  Toggle: unused,
+  ListBlock: unused,
+  KVList: unused,
+  HeroStat: unused,
+  StatTiles: unused,
+  ImageBlock: unused,
+  PhotoGrid: unused,
+  Bubbles: unused,
+  Chips: unused,
+  Tabs: unused,
+  MapView: unused,
+  BarChart: unused,
+  LineChart: unused,
+  AreaChart: unused,
+  PieChart: unused,
+  HorizontalBarChart: unused,
+  Form: unused,
+  FormControl: unused,
+  Input: unused,
+  TextArea: unused,
+  Select: unused,
+  DatePicker: unused,
+  Slider: unused,
+  Buttons: unused,
+  Button: unused,
+} as ApplessRenderers)

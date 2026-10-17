@@ -1,7 +1,14 @@
 {
   "$schema": "https://unpkg.com/knip/schema.json",
-  "entry": ["web/lib/view-ui.tsx", "web/lib/view-sync.ts", "web/postcss.config.mjs"],
+  "entry": [
+    "web/lib/modes/react/ui.tsx",
+    "web/lib/view-sync.ts",
+    "web/lib/modes/openui/library.ts",
+    "web/postcss.config.mjs",
+    "web/components/ui/**/*.{ts,tsx}"
+  ],
   "ignoreIssues": {
-    "web/components/genui/**": ["exports", "types", "duplicates"]
+    "web/lib/modes/react/kit/**": ["exports", "types", "duplicates"],
+    "web/components/ui/**": ["exports", "types", "duplicates"]
   }
 }

@@ -1,18 +1,21 @@
-import { parseSchema, type Schema } from "@shared/sync/schema"
+import { isDocumentLang, type DocumentLang } from "@shared/lang"
+import type { Schema } from "@shared/sync/schema"
+import { viewMode } from "./modes"
 
-export type Generation = { title: string; schema: Schema; source: string }
+export type Generation = { title: string; schema: Schema; source: string; lang: DocumentLang }
 
 export function parseGeneration(value: unknown): Generation {
   if (!isRecord(value)) throw new Error("The model did not return a document.")
   const source = stripFences(typeof value.source === "string" ? value.source.trim() : "")
-  if (!source.includes("export default")) throw new Error("The app needs a default export.")
   if (source.length > 60_000) throw new Error("The app source is too long.")
   const title = typeof value.title === "string" && value.title.trim() ? value.title.trim() : "Untitled"
-  return { title, schema: parseSchema(value.schema), source }
+  const lang = isDocumentLang(value.lang) ? value.lang : "react"
+  const mode = viewMode(lang)
+  return { title, schema: mode.schema(value.schema), source, lang }
 }
 
 function stripFences(source: string): string {
-  const fenced = source.match(/^```(?:tsx|jsx|ts|js)?\s*\n([\s\S]*?)\n```$/)
+  const fenced = source.match(/^```(?:tsx|jsx|ts|js|openui)?\s*\n([\s\S]*?)\n```$/)
   return fenced ? fenced[1].trim() : source
 }
 

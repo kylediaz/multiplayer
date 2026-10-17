@@ -3,11 +3,13 @@ import path from "node:path"
 import type { ServerWebSocket } from "bun"
 import { DataplaneDb } from "./db"
 import { Document, type Conn } from "./document"
+import { isDocumentLang } from "../shared/lang"
 import { parseClientMessage, type ClientMessage, type ServerMessage } from "../shared/sync/protocol"
 import { parseSchema } from "../shared/sync/schema"
 
 const port = Number(process.env.PORT ?? 3003)
-const origins = (process.env.NEXT_ORIGIN ?? "http://localhost:3002,http://localhost:3000")
+const configuredOrigins = process.env.NEXT_ORIGIN
+const origins = (configuredOrigins ?? "http://localhost:3002,http://localhost:3000")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean)
@@ -19,10 +21,23 @@ type SocketData = { docId: string; clientId?: string; conn?: Conn }
 const openDocuments = new Map<string, Document>()
 const emptyTimers = new Map<string, ReturnType<typeof setTimeout>>()
 
+function loopbackOrigin(origin: string): boolean {
+  try {
+    const url = new URL(origin)
+    return url.origin === origin && (url.protocol === "http:" || url.protocol === "https:") && (url.hostname === "localhost" || url.hostname === "127.0.0.1")
+  } catch {
+    return false
+  }
+}
+
+function originAllowed(origin: string): boolean {
+  return origins.includes(origin) || (!configuredOrigins && loopbackOrigin(origin))
+}
+
 function allowOrigin(request: Request): string | null {
   const origin = request.headers.get("origin")
   if (!origin) return origins[0] ?? "*"
-  return origins.includes(origin) ? origin : null
+  return originAllowed(origin) ? origin : null
 }
 
 function json(request: Request, body: unknown, status = 200): Response {
@@ -40,6 +55,7 @@ function publicDocument(doc: NonNullable<ReturnType<DataplaneDb["getDocument"]>>
     id: doc.id,
     title: doc.title,
     schema: doc.schema,
+    type: doc.type,
     viewRevision: doc.viewRevision,
     headVersion: version,
   }
@@ -113,6 +129,7 @@ window.host.onMessage((message) => {
 
 function contentType(file: string): string {
   if (file.endsWith(".js")) return "text/javascript; charset=utf-8"
+  if (file.endsWith(".txt")) return "text/plain; charset=utf-8"
   if (file.endsWith(".css")) return "text/css; charset=utf-8"
   if (file.endsWith(".html")) return "text/html; charset=utf-8"
   if (file.endsWith(".svg")) return "image/svg+xml"
@@ -134,8 +151,9 @@ function viewFile(revisionId: string, rel: string): string | null {
 async function serveView(request: Request, revisionId: string, rel: string): Promise<Response> {
   const requested = new URL(request.url).searchParams.get("parent")
   const origin =
-    (requested && origins.includes(requested) ? requested : null) ?? allowOrigin(request) ?? origins[0] ?? "http://localhost:3002"
-  const headers: Record<string, string> = { "content-security-policy": `frame-ancestors ${origins.join(" ")}` }
+    (requested && originAllowed(requested) ? requested : null) ?? allowOrigin(request) ?? origins[0] ?? "http://localhost:3002"
+  const ancestors = origins.includes(origin) ? origins : [...origins, origin]
+  const headers: Record<string, string> = { "content-security-policy": `frame-ancestors ${ancestors.join(" ")}` }
   if (rel === "" || rel === "index.html") {
     headers["content-type"] = "text/html; charset=utf-8"
     return new Response(viewHtml(origin), { headers })
@@ -162,16 +180,18 @@ async function publishView(request: Request, docId: string): Promise<Response> {
   const dir = path.join(viewsDir, revisionId)
   mkdirSync(path.join(dir, "assets"), { recursive: true })
   let hasMain = false
+  let hasSource = false
   for (const entry of form.values()) {
     const file = entry as { name?: string; arrayBuffer?: () => Promise<ArrayBuffer> }
     if (typeof file.name !== "string" || typeof file.arrayBuffer !== "function") continue
     const name = path.basename(file.name)
     if (!name || name.startsWith(".")) continue
-    const target = name === "main.js" || name === "main.css" ? path.join(dir, name) : path.join(dir, "assets", name)
+    const target = name === "main.js" || name === "main.css" || name === "source.txt" ? path.join(dir, name) : path.join(dir, "assets", name)
     if (name === "main.js") hasMain = true
+    if (name === "source.txt") hasSource = true
     await Bun.write(target, await file.arrayBuffer())
   }
-  if (!hasMain) return json(request, { error: "main.js is required" }, 400)
+  if (!hasMain && !hasSource) return json(request, { error: "main.js or source.txt is required" }, 400)
   db.addRevision({ id: revisionId, docId, schema: doc.schema })
   return json(request, { revisionId })
 }
@@ -197,7 +217,7 @@ const server = Bun.serve<SocketData>({
     const sync = url.pathname.match(/^\/v1\/documents\/([^/]+)\/sync$/)
     if (sync && request.method === "GET") {
       const origin = request.headers.get("origin")
-      if (origin && !origins.includes(origin)) return new Response("forbidden", { status: 403 })
+      if (origin && !originAllowed(origin)) return new Response("forbidden", { status: 403 })
       const docId = decodeURIComponent(sync[1])
       if (!loadDocument(docId)) return new Response("not found", { status: 404 })
       if (bun.upgrade(request, { data: { docId } })) return
@@ -215,7 +235,7 @@ const server = Bun.serve<SocketData>({
     if (revision && request.method === "GET") return serveView(request, revision[1], revision[2])
 
     if (url.pathname === "/v1/documents" && request.method === "POST") {
-      let body: { title?: unknown; schema?: unknown }
+      let body: { title?: unknown; schema?: unknown; type?: unknown }
       try {
         body = await request.json()
       } catch {
@@ -228,7 +248,8 @@ const server = Bun.serve<SocketData>({
       } catch (err) {
         return json(request, { error: err instanceof Error ? err.message : "invalid schema" }, 400)
       }
-      const doc = db.createDocument({ id: id("doc_"), title: body.title.trim(), schema })
+      const type = isDocumentLang(body.type) ? body.type : "react"
+      const doc = db.createDocument({ id: id("doc_"), title: body.title.trim(), schema, type })
       return json(request, publicDocument(doc, 0), 201)
     }
 

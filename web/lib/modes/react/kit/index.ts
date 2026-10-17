@@ -3,30 +3,19 @@
 export type { CSSProperties, RefObject } from "react"
 export { useEffect, useMemo, useRef, useState } from "react"
 
-export type { CanvasHostThemeBrand, CategoryPalette, ChartPalette, Color } from "./theme"
+export type { CategoryPalette, ChartPalette, Color } from "./theme"
 export {
   canvasFontFamilyCursor,
-  canvasFontFamilyGrok,
   canvasPaletteDark,
-  canvasPaletteGrokDark,
-  canvasPaletteGrokLight,
   canvasPaletteLight,
   canvasRadius,
-  canvasRadiusForBrand,
-  canvasRadiusGrok,
   canvasSpacing,
   canvasTokens,
   canvasTokensLight,
   canvasTypography,
-  canvasTypographyForBrand,
-  canvasTypographyGrok,
   categoryPaletteDark,
-  categoryPaletteGrokDark,
-  categoryPaletteGrokLight,
   categoryPaletteLight,
   chartPalette,
-  chartPaletteGrok,
-  chartThemeForBrand,
   colorPalette,
   usageColorSequence,
   useHostTheme,
@@ -43,10 +32,6 @@ export { DiffStats, DiffView } from "./extras"
 export type { DiffLineData, DiffLineType } from "./extras"
 export type { CheckboxProps, IconButtonProps, SelectOption, SelectProps, TextAreaProps, TextInputProps, ToggleProps } from "./forms"
 export { Checkbox, IconButton, Select, TextArea, TextInput, Toggle } from "./forms"
-
-export type { SetCanvasState } from "./state"
-export { useCanvasAction, useCanvasState } from "./state"
-export type { CanvasAction } from "./state"
 
 export { Swatch } from "./extras"
 export { TodoList, TodoListCard } from "./extras"

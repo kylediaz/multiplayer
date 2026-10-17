@@ -1,8 +1,17 @@
-import { existsSync, readFileSync } from "node:fs"
-import path from "node:path"
-import { parseGeneration, type Generation } from "./parse-generation"
+import type { GenerationMode } from "@shared/lang"
+import { cupertinoLibrary } from "../modes/openui/library-server"
 
-const SYSTEM = `You build a collaborative React app. Reply with one JSON object and nothing else.
+let openuiPrompt: string | undefined
+
+function openuiComponentPrompt(): string {
+  openuiPrompt ??= cupertinoLibrary.prompt({
+    preamble:
+      "The submitted source is an openui-lang program. It uses the Cupertino components, and the root is Card. Do not write React, and do not wrap the program in markdown fences. Icon names are lucide kebab-case from this set: wifi, bluetooth, plane, battery, battery-full, battery-charging, moon, bell, bell-ring, heart, heart-pulse, flame, credit-card, wallet, map-pin, music, camera, settings, lock, shield-check, sun, cloud, cloud-rain, droplets, wind, message-circle, phone, mail, calendar, clock, alarm-clock, volume-2, house, user, search, star, utensils, shopping-bag, car, map, thermometer, activity, dumbbell, coffee, newspaper, globe, share, play, pause, plus.",
+  })
+  return openuiPrompt
+}
+
+const REACT = `You build a collaborative React app. Call submit with the finished app. If submit returns problems, fix the app and call submit again. Do not reply with the source as text.
 {
   "title": string,
   "schema": { "keys": { "<id>": Key } },
@@ -125,46 +134,25 @@ Use for small tweaks on built-in components (e.g. extra padding or width). **Do 
 
 The design guidance describes what to avoid. It is not a request to add sections, cards, or controls. Ship the smallest layout that does what was asked.`
 
-export async function generateDocument(prompt: string): Promise<Generation> {
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${openAiKey()}`,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "gpt-5",
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: SYSTEM },
-        { role: "user", content: prompt },
-      ],
-    }),
-  })
-  if (!response.ok) {
-    const detail = await response.text()
-    throw new Error(response.status === 401 ? "The OpenAI key was rejected." : `The model request failed (${response.status}). ${detail.slice(0, 180)}`)
-  }
-  const body = (await response.json()) as { choices?: { message?: { content?: string } }[] }
-  const content = body.choices?.[0]?.message?.content
-  if (!content) throw new Error("The model returned an empty document.")
-  return parseGeneration(JSON.parse(content))
+const OPENUI = `You build an app with the Cupertino components. Call submit with the finished app. If submit returns problems, fix the program and call submit again. Do not reply with the source as text.
+{
+  "title": string,
+  "source": "<openui-lang program>"
 }
+The program does not share state.`
 
-function openAiKey(): string {
-  if (process.env.OPENAI_API_KEY) return process.env.OPENAI_API_KEY
-  const file = path.join(repoRoot(), ".env")
-  if (!existsSync(file)) throw new Error("OPENAI_API_KEY is not set.")
-  for (const line of readFileSync(file, "utf8").split("\n")) {
-    const trimmed = line.trim()
-    if (!trimmed.startsWith("OPENAI_API_KEY=")) continue
-    const value = trimmed.slice("OPENAI_API_KEY=".length).trim().replace(/^["']|["']$/g, "")
-    if (value) return value
-  }
-  throw new Error("OPENAI_API_KEY is not set.")
-}
+const DECIDE = `You build an app. Choose React or OpenUI, then call submit with lang set to that choice. If submit returns problems, fix the app and call submit again. Do not reply with the source as text.
 
-function repoRoot(): string {
-  const candidates = [process.cwd(), path.resolve(process.cwd(), "..")]
-  return candidates.find((dir) => existsSync(path.join(dir, "api", "index.ts"))) ?? process.cwd()
+Set lang to "openui" when the Cupertino components can express the app. source is an openui-lang program and schema is { "keys": {} }.
+Set lang to "react" when the app needs shared collaborative state, or behavior those components cannot express. source is one TSX file, and schema lists every sync id.
+
+When lang is "react", follow this contract.
+
+`
+
+export function instructions(mode: GenerationMode): string {
+  if (mode === "react") return REACT
+  const openui = `${OPENUI}\n\n${openuiComponentPrompt()}`
+  if (mode === "openui") return openui
+  return `${DECIDE}${REACT}\n\nWhen lang is "openui", schema.keys is empty and source is the openui-lang program described next.\n\n${openui}`
 }
