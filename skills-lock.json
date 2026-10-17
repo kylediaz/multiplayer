@@ -12,6 +12,12 @@
       "sourceType": "github",
       "skillPath": "skills/migrate-ai-sdk-v6-to-v7/SKILL.md",
       "computedHash": "92a68769c5a82e6bd35cb8fe13537a80f6341742306d6a23c52afb6c1f7b5ab9"
+    },
+    "openui": {
+      "source": "thesysdev/skills",
+      "sourceType": "github",
+      "skillPath": "skills/openui/SKILL.md",
+      "computedHash": "1f2f27370f1fc69ba09e96fc9186350c641d8fb0718dc8b99d131950704e7dac"
     }
   }
 }
