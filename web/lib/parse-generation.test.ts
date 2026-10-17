@@ -33,10 +33,10 @@ describe("parseGeneration", () => {
       title: "Hello",
       lang: "openui",
       schema: { keys: {} },
-      source: 'root = Card([title])\ntitle = TextContent("Hello", "large-heavy")',
+      source: 'root = Stack([title])\ntitle = H1("Hello")',
     })
     expect(app.lang).toBe("openui")
-    expect(app.source).toContain("root = Card")
+    expect(app.source).toContain("root = Stack")
   })
 
   it("keeps an OpenUI program that does not parse", () => {
@@ -61,7 +61,7 @@ describe("publish", () => {
   })
 
   it("reports every OpenUI problem", async () => {
-    const revision = await openuiMode.publish('root = Card([a, b])\na = Missing("x")\nb = Missing("y")')
+    const revision = await openuiMode.publish('root = Stack([a, b])\na = Missing("x")\nb = Missing("y")')
     expect(revision.ok).toBe(false)
     if (revision.ok) return
     expect(revision.problems.length).toBeGreaterThan(1)
@@ -112,17 +112,22 @@ export default function App() {
     expect(js).toContain("title")
   })
 
-  it("bundles canvas components", async () => {
+  it("bundles kit components", async () => {
     const { js, css } = await reactBundle(`import { Button, Stack } from "ui"
 export default function App() {
-  return <Stack gap={8} className="mt-8"><Button variant="primary">Go</Button></Stack>
+  return <Stack gap={8} className="mt-8"><Button variant="default">Go</Button></Stack>
 }`)
     expect(js).toContain("Go")
     expect(css).toContain("mt-8")
   })
 
+  it("publishes a chart program", async () => {
+    const revision = await openuiMode.publish('root = Stack([chart])\nchart = BarChart(["Jan", "Feb"], [{ name: "Revenue", data: [1, 2] }])')
+    expect(revision.ok).toBe(true)
+  })
+
   it("stores an OpenUI program without a bundle", async () => {
-    const revision = await openuiMode.publish('root = Card([title])\ntitle = TextContent("Hello", "large-heavy")')
+    const revision = await openuiMode.publish('root = Stack([title])\ntitle = H1("Hello")')
     expect(revision.ok).toBe(true)
     if (!revision.ok) return
     expect(revision.files.map((file) => file.name)).toEqual(["source.txt"])

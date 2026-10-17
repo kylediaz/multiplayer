@@ -1,14 +1,16 @@
 "use client"
 
 import { useSyncExternalStore, type ComponentProps, type FocusEvent, type ReactNode } from "react"
-import { Checkbox as CheckboxBase, Select as SelectBase, TextArea as TextAreaBase, TextInput as TextInputBase, Toggle as ToggleBase } from "./kit"
-import { cn } from "@/lib/utils"
+import { Checkbox as CheckboxBase, Select as SelectBase, Slider as SliderBase, Switch as SwitchBase, TextArea as TextAreaBase, TextInput as TextInputBase } from "../common/kit"
+import { cn } from "cn"
 import { shellMessage } from "@/lib/shell-messages"
 
 export {
+  Alert,
+  AreaChart,
+  Badge,
   BarChart,
   Button,
-  Callout,
   Card,
   CardBody,
   CardHeader,
@@ -17,7 +19,6 @@ export {
   computeDAGLayout,
   DiffStats,
   DiffView,
-  Divider,
   Grid,
   H1,
   H2,
@@ -25,21 +26,21 @@ export {
   IconButton,
   LineChart,
   Link,
-  mergeStyle,
   PieChart,
-  Pill,
+  Progress,
   Row,
+  Separator,
   Spacer,
   Stack,
   Stat,
   Swatch,
   Table,
+  Tabs,
   Text,
   TodoList,
   TodoListCard,
   UsageBar,
-  useHostTheme,
-} from "./kit"
+} from "../common/kit"
 
 type Host = {
   post(message: Record<string, unknown>): void
@@ -126,10 +127,10 @@ export function Checkbox({ field, ...props }: ComponentProps<typeof CheckboxBase
   )
 }
 
-export function Toggle({ field, ...props }: ComponentProps<typeof ToggleBase> & { field?: string }) {
+export function Switch({ field, ...props }: ComponentProps<typeof SwitchBase> & { field?: string }) {
   return (
     <FieldFocus field={field} className="w-fit">
-      <ToggleBase {...props} />
+      <SwitchBase {...props} />
     </FieldFocus>
   )
 }
@@ -138,6 +139,14 @@ export function Select({ field, ...props }: ComponentProps<typeof SelectBase> & 
   return (
     <FieldFocus field={field} className="w-full">
       <SelectBase {...props} />
+    </FieldFocus>
+  )
+}
+
+export function Slider({ field, ...props }: ComponentProps<typeof SliderBase> & { field?: string }) {
+  return (
+    <FieldFocus field={field} className="w-full">
+      <SliderBase {...props} />
     </FieldFocus>
   )
 }

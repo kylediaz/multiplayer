@@ -3,12 +3,12 @@
   "entry": [
     "web/lib/modes/react/ui.tsx",
     "web/lib/view-sync.ts",
-    "web/lib/modes/openui/library.ts",
+    "web/lib/modes/openui/library.tsx",
     "web/postcss.config.mjs",
     "web/components/ui/**/*.{ts,tsx}"
   ],
   "ignoreIssues": {
-    "web/lib/modes/react/kit/**": ["exports", "types", "duplicates"],
+    "web/lib/modes/common/kit/**": ["exports", "types", "duplicates"],
     "web/components/ui/**": ["exports", "types", "duplicates"]
   }
 }

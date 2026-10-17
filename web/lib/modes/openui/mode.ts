@@ -1,9 +1,9 @@
 import { createParser } from "@openuidev/lang-core"
 import { parseSchema } from "@shared/sync/schema"
 import type { Published, ViewMode } from "../mode"
-import { cupertinoLibrary } from "./library-server"
+import { kitLibrary } from "./library"
 
-const parser = createParser(cupertinoLibrary.toJSONSchema(), cupertinoLibrary.root)
+const parser = createParser(kitLibrary.toJSONSchema(), kitLibrary.root)
 
 function problemsFor(source: string): string[] {
   if (!source) return ["The app needs an OpenUI program."]
