@@ -14,7 +14,11 @@ type ReactViewProps = {
 const emptySubscribe = () => () => {}
 
 export function ReactView({ document }: ReactViewProps) {
-  return <CodeFrame document={document} />
+  return (
+    <div className="h-full md:px-4 md:pt-6 md:pb-4">
+      <CodeFrame document={document} />
+    </div>
+  )
 }
 
 function CodeFrame({ document }: { document: DataplaneDocument }) {

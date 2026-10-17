@@ -11,29 +11,16 @@ const OpenUIView = dynamic(() => import("./openui/view").then((mod) => mod.OpenU
   loading: () => <div className="h-full animate-pulse bg-[#f2f2f7]" />,
 })
 
-type ModeRenderProps = {
+export type ModeRenderProps = {
   document: DataplaneDocument
   source: string | null
 }
 
-export type ModeRenderer = {
-  sourceLabel: string
-  className?: string
-  View: ComponentType<ModeRenderProps>
-}
+const views = {
+  react: ReactView,
+  openui: OpenUIView,
+} satisfies Record<DocumentLang, ComponentType<ModeRenderProps>>
 
-const renderers = {
-  react: {
-    sourceLabel: "App.tsx",
-    className: "md:px-4 md:pt-6 md:pb-4",
-    View: ReactView,
-  },
-  openui: {
-    sourceLabel: "app.openui",
-    View: OpenUIView,
-  },
-} satisfies Record<DocumentLang, ModeRenderer>
-
-export function modeRenderer(lang: DocumentLang): ModeRenderer {
-  return renderers[lang]
+export function modeRenderer(lang: DocumentLang): ComponentType<ModeRenderProps> {
+  return views[lang]
 }
