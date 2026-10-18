@@ -1,16 +1,15 @@
 import type { GenerationMode } from "@shared/lang"
-import { kitLibrary } from "../modes/openui/library"
+import { openuiLibrary } from "../modes/openui/library"
 
 let openuiPrompt: string | undefined
 
 function openuiComponentPrompt(): string {
-  openuiPrompt ??= kitLibrary.prompt({
+  openuiPrompt ??= openuiLibrary.prompt({
     preamble:
-      "The submitted source is an openui-lang program. It uses the shared components, and the root is Stack. Do not write React, and do not wrap the program in markdown fences.",
+      "The submitted source is an openui-lang program. The root is Card. Do not write React, do not use the shadcn components, and do not wrap the program in markdown fences.",
     additionalRules: [
-      "The page is one Stack. The title is an H1.",
-      "Do not put a Card inside a Card.",
-      "Do not wrap the page in a Card.",
+      "The page is one Card. Start with CardHeader.",
+      "There are no form fields or charts.",
     ],
   })
   return openuiPrompt
@@ -37,7 +36,7 @@ A list is an ordered collection of items, such as tasks. Do not store a collecti
 insert adds an item and keeps it when someone else inserts at the same time. remove deletes one item. move reorders. update merges a patch into that item: updates to different fields both stay, and two updates of the same field keep the later one.
 Edit a text field on an item with useText(\`\${listId}/\${item.id}/\${field}\`) so typing merges. Edit a register field with useRegister on that same path.
 
-From "ui", use the shared components. They are shadcn. Lay them out with Stack, Row, and Grid. Use className for Tailwind adjustments. Colors come from the theme: bg-background, bg-card, text-foreground, text-muted-foreground, border-border, bg-primary. Do not hardcode hex, and do not invent a second design system.
+From "ui", use the shadcn components. They are only available in React. Lay them out with Stack, Row, and Grid. Use className for Tailwind adjustments. Colors come from the theme: bg-background, bg-card, text-foreground, text-muted-foreground, border-border, bg-primary. Do not hardcode hex, and do not invent a second design system.
 Layout: Stack (vertical, gap), Row (horizontal, gap, align, justify), Grid (columns as a number or a template string, gap), Separator, Spacer.
 Type: H1, H2, H3, Text (tone "primary"|"secondary"|"muted", size "body"|"small"), Code, Link.
 Surfaces: Card with CardHeader (plain text, optional trailing) and CardBody. Table (headers, rows). Alert (variant "default"|"destructive"|"info"|"success"|"warning"). Stat (value, label). Badge. Button (variant "default"|"secondary"|"outline"|"ghost"|"destructive", onClick). Progress (value from 0 to 100). Tabs ({ value, label, content }[]).
@@ -129,17 +128,17 @@ Prefer built-in components (\`Card\`, \`Button\`, \`Text\`, etc.) over raw class
 
 The design guidance describes what to avoid. It is not a request to add sections, cards, or controls. Ship the smallest layout that does what was asked.`
 
-const OPENUI = `You build an app with the shared components. Call submit with the finished app. If submit returns problems, fix the program and call submit again. Do not reply with the source as text.
+const OPENUI = `You build an app with the OpenUI component library. Call submit with the finished app. If submit returns problems, fix the program and call submit again. Do not reply with the source as text.
 {
   "title": string,
   "source": "<openui-lang program>"
 }
-The program does not share state.`
+The program does not share state and has no form fields.`
 
 const DECIDE = `You build an app. Choose React or OpenUI, then call submit with lang set to that choice. If submit returns problems, fix the app and call submit again. Do not reply with the source as text.
 
-Set lang to "openui" when the shared components can express the app. source is an openui-lang program and schema is { "keys": {} }.
-Set lang to "react" when the app needs shared collaborative state, or behavior those components cannot express. source is one TSX file, and schema lists every sync id.
+Set lang to "openui" when a screen of headers, text, lists, media, maps, tables, drawings, and buttons can express the app. source is an openui-lang program and schema is { "keys": {} }.
+Set lang to "react" when the app needs shared collaborative state, form fields, or behavior that library cannot express. source is one TSX file, and schema lists every sync id. shadcn is only available in React.
 
 When lang is "react", follow this contract.
 

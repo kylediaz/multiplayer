@@ -37,13 +37,13 @@ const reactInput = z.object({
 
 const openuiInput = z.object({
   title: z.string().describe("Short document title"),
-  source: z.string().describe("An openui-lang program whose root is Stack. No markdown fences."),
+  source: z.string().describe("An openui-lang program whose root is Card. No markdown fences."),
 })
 
 const decideInput = reactInput.extend({
   lang: z
     .enum(["react", "openui"])
-    .describe("openui when the shared components can express the app. react when it needs shared state or behavior those components cannot express."),
+    .describe("openui when a screen of headers, text, lists, media, maps, tables, drawings, and buttons can express the app. react when it needs shared state, form fields, or behavior that library cannot express."),
 })
 
 type SubmitInput = { title: string; source: string; schema?: unknown; lang?: DocumentLang }

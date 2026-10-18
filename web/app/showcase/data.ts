@@ -47,9 +47,26 @@ export const showcaseMeta = [
     title: "Tahoe cabins",
     ask: "the three tahoe cabins side by side so we can pick",
   },
+  {
+    kind: "heater",
+    genre: "document",
+    title: "The cabin heater",
+    ask: "explain why the pine lodge heater doesn't short-cycle, with the formula and the code",
+  },
 ] as const
 
 export type ShowcaseKind = (typeof showcaseMeta)[number]["kind"]
+
+export const heater = {
+  on: String.raw`\mathrm{on}(T) = T < S - \frac{g}{2}`,
+  off: String.raw`\mathrm{off}(T) = T > S + \frac{g}{2}`,
+  coast: String.raw`t = \frac{C}{P}\left(S + \frac{g}{2} - T\right)`,
+  code: `function step(temp, set, gap, heating) {
+  if (temp < set - gap / 2) return true
+  if (temp > set + gap / 2) return false
+  return heating
+}`,
+} as const
 
 export const groceryItems = [
   { name: "Oat milk", price: 6, done: false },

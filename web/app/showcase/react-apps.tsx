@@ -31,6 +31,7 @@ import {
   cabinRows,
   dinnerFacts,
   games,
+  heater,
   groceryItems,
   nights,
   readingList,
@@ -477,6 +478,25 @@ function Choice({ pressed, onClick, children }: { pressed: boolean; onClick: () 
     <Button variant={pressed ? "default" : "outline"} pressed={pressed} onClick={onClick}>
       {children}
     </Button>
+  )
+}
+
+export function HeaterApp() {
+  return (
+    <Stack gap={16}>
+      <H1>The cabin heater</H1>
+      <Text>The boiler at Pine Lodge short-cycles if it chases the set point. It doesn't. It holds a deadband and keeps doing what it was already doing.</Text>
+      <Text>Call the set point `S` and the gap `g`. Heat starts below the band and stops above it.</Text>
+      <Text className="text-center font-mono">on(T) = T &lt; S − g/2</Text>
+      <Text className="text-center font-mono">off(T) = T &gt; S + g/2</Text>
+      <pre className="overflow-x-auto rounded-md bg-muted px-4 py-3.5 font-mono text-[13px] leading-[1.6] text-foreground">
+        <code>{heater.code}</code>
+      </pre>
+      <Text>At `S = 68` and `g = 2`, the boiler kicks on at 67°F and cuts out at 69°F.</Text>
+      <Text>The coast back down takes about</Text>
+      <Text className="text-center font-mono">t = (C/P)(S + g/2 − T)</Text>
+      <Text>where `C` is the heat the room holds and `P` is how fast the boiler puts it back. A wider gap means fewer starts, and a longer wait.</Text>
+    </Stack>
   )
 }
 

@@ -33,10 +33,10 @@ describe("parseGeneration", () => {
       title: "Hello",
       lang: "openui",
       schema: { keys: {} },
-      source: 'root = Stack([title])\ntitle = H1("Hello")',
+      source: 'root = Card([title])\ntitle = CardHeader("Hello")',
     })
     expect(app.lang).toBe("openui")
-    expect(app.source).toContain("root = Stack")
+    expect(app.source).toContain("root = Card")
   })
 
   it("keeps an OpenUI program that does not parse", () => {
@@ -61,7 +61,7 @@ describe("publish", () => {
   })
 
   it("reports every OpenUI problem", async () => {
-    const revision = await openuiMode.publish('root = Stack([a, b])\na = Missing("x")\nb = Missing("y")')
+    const revision = await openuiMode.publish('root = Card([a, b])\na = Missing("x")\nb = Missing("y")')
     expect(revision.ok).toBe(false)
     if (revision.ok) return
     expect(revision.problems.length).toBeGreaterThan(1)
@@ -121,13 +121,34 @@ export default function App() {
     expect(css).toContain("mt-8")
   })
 
-  it("publishes a chart program", async () => {
-    const revision = await openuiMode.publish('root = Stack([chart])\nchart = BarChart(["Jan", "Feb"], [{ name: "Revenue", data: [1, 2] }])')
+  it("publishes maps, prose, tables, drawings, and html", async () => {
+    const source = [
+      'root = Card([header, prose, sheet, pin, map, dot, drawing, page])',
+      'header = CardHeader("Nopa")',
+      'prose = Markdown("**7:30** at [Nopa](https://nopa.com)")',
+      'sheet = Table(["Place", "Seats"], [["Nopa", "6"]])',
+      'pin = MapMarker("Nopa", 37.7749, -122.4376)',
+      'map = Map([pin])',
+      'dot = Circle(50, 50, 20)',
+      'drawing = Svg([dot], "0 0 100 100")',
+      'page = HtmlView("<p>Hello</p>", 120, "Hello")',
+    ].join("\n")
+    const revision = await openuiMode.publish(source)
+    expect(revision.ok).toBe(true)
+  })
+
+  it("publishes a program that calls a library function", async () => {
+    const revision = await openuiMode.publish('root = Card([header, line])\nheader = CardHeader("Bill")\nline = TextContent(@Percent(1, 4))')
+    expect(revision.ok).toBe(true)
+  })
+
+  it("publishes a list program", async () => {
+    const revision = await openuiMode.publish('root = Card([header, list])\nheader = CardHeader("Groceries")\nlist = ListBlock([item])\nitem = ListItem("Eggs", null, null, "$8")')
     expect(revision.ok).toBe(true)
   })
 
   it("stores an OpenUI program without a bundle", async () => {
-    const revision = await openuiMode.publish('root = Stack([title])\ntitle = H1("Hello")')
+    const revision = await openuiMode.publish('root = Card([title])\ntitle = CardHeader("Hello")')
     expect(revision.ok).toBe(true)
     if (!revision.ok) return
     expect(revision.files.map((file) => file.name)).toEqual(["source.txt"])

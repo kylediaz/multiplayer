@@ -1,9 +1,9 @@
 import {
   apartmentRows,
   apartments,
-  cabinHeaders,
   cabinRows,
   dinnerFacts,
+  heater,
   games,
   groceryItems,
   nights,
@@ -23,10 +23,6 @@ function refs(names: readonly string[]): string {
   return `[${names.join(", ")}]`
 }
 
-function strs(values: readonly string[]): string {
-  return `[${values.map(q).join(", ")}]`
-}
-
 function call(name: string, component: string, args: readonly string[] = []): string {
   return `${name} = ${component}(${args.join(", ")})`
 }
@@ -35,69 +31,54 @@ function program(lines: string[]): string {
   return lines.join("\n")
 }
 
+function listItem(name: string, title: string, subtitle?: string, trailing?: string): string {
+  const args = [q(title)]
+  if (subtitle !== undefined || trailing !== undefined) args.push(subtitle === undefined ? "null" : q(subtitle))
+  if (trailing !== undefined) args.push("null", q(trailing))
+  return call(name, "ListItem", args)
+}
+
+function kv(name: string, header: string, rows: readonly (readonly [string, string])[]): string {
+  const body = rows.map(([label, value]) => `{ label: ${q(label)}, value: ${q(value)} }`).join(", ")
+  return call(name, "KVList", [`[${body}]`, q(header)])
+}
+
 function groceries(): string {
   const open = groceryItems.filter((item) => !item.done)
   const done = groceryItems.filter((item) => item.done)
-  const total = groceryItems.reduce((sum, item) => sum + item.price, 0)
   const lines: string[] = []
   const openNames = open.map((item, index) => {
     const name = `open${index}`
-    lines.push(call(name, "Row", [refs([`${name}Check`, `${name}Price`]), "12", q("center"), q("space-between")]))
-    lines.push(call(`${name}Check`, "Checkbox", [q(item.name)]))
-    lines.push(call(`${name}Price`, "Text", [q(`$${item.price}`), q("muted")]))
+    lines.push(listItem(name, item.name, undefined, `$${item.price}`))
     return name
   })
   const doneNames = done.map((item, index) => {
     const name = `done${index}`
-    lines.push(call(name, "Checkbox", [q(item.name), "true"]))
+    lines.push(listItem(name, item.name, undefined, `$${item.price}`))
     return name
   })
   lines.push(
-    call("root", "Stack", [refs(["header", "listCard", "doneTitle", "doneList", "send"]), "20"]),
-    call("header", "Stack", [refs(["title", "status"]), "4"]),
-    call("title", "H1", [q("Tahoe groceries")]),
-    call("status", "Text", [q(`${open.length} left, $${total} estimated`), q("muted")]),
-    call("listCard", "Card", [refs(["listHead", "listBody"])]),
-    call("listHead", "CardHeader", [q("To get")]),
-    call("listBody", "CardBody", [refs(["listStack"])]),
-    call("listStack", "Stack", [refs(["openList", "addName", "addPriceRow"]), "12"]),
-    call("openList", "Stack", [refs(openNames), "10"]),
-    call("addName", "TextInput", [q("Add something")]),
-    call("addPriceRow", "Row", [refs(["addPrice", "addBtn"]), "8"]),
-    call("addPrice", "TextInput", [q("Price"), "null", q("number")]),
-    call("addBtn", "Button", [q("Add"), q("secondary")]),
-    call("doneTitle", "H2", [q("Done")]),
-    call("doneList", "Stack", [refs(doneNames), "8"]),
-    call("send", "Button", [q("Text me the list"), q("secondary")]),
+    call("root", "Card", [refs(["header", "openList", "doneList", "send"])]),
+    call("header", "CardHeader", [q("Tahoe groceries")]),
+    call("openList", "ListBlock", [refs(openNames), q("To get")]),
+    call("doneList", "ListBlock", [refs(doneNames), q("Done")]),
+    call("send", "Buttons", [refs(["sendButton"])]),
+    call("sendButton", "Button", [q("Text me the list")]),
   )
   return program(lines)
 }
 
 function books(): string {
-  const unread = readingList.filter((book) => !book.read).length
   const lines: string[] = []
   const names = readingList.map((book, index) => {
     const name = `book${index}`
-    lines.push(call(name, "Row", [refs([`${name}Check`, `${name}Copy`]), "12", q("start")]))
-    lines.push(call(`${name}Check`, "Checkbox", book.read ? ["null", "true"] : []))
-    lines.push(call(`${name}Copy`, "Stack", [refs([`${name}Title`, `${name}Author`]), "0"]))
-    lines.push(call(`${name}Title`, "Text", book.read ? [q(book.title), q("muted")] : [q(book.title)]))
-    lines.push(call(`${name}Author`, "Text", [q(book.author), q("muted"), q("small")]))
+    lines.push(listItem(name, book.title, book.author, book.read ? "Read" : undefined))
     return name
   })
   lines.push(
-    call("root", "Stack", [refs(["header", "listCard"]), "20"]),
-    call("header", "Stack", [refs(["title", "status"]), "4"]),
-    call("title", "H1", [q("Books to read")]),
-    call("status", "Text", [q(`${unread} to go`), q("muted")]),
-    call("listCard", "Card", [refs(["listHead", "listBody"])]),
-    call("listHead", "CardHeader", [q("The list")]),
-    call("listBody", "CardBody", [refs(["listStack"])]),
-    call("listStack", "Stack", [refs([...names, "addTitle", "addAuthorRow"]), "12"]),
-    call("addTitle", "TextInput", [q("Add a book")]),
-    call("addAuthorRow", "Row", [refs(["addAuthor", "addBtn"]), "8"]),
-    call("addAuthor", "TextInput", [q("Author")]),
-    call("addBtn", "Button", [q("Add"), q("secondary")]),
+    call("root", "Card", [refs(["header", "list"])]),
+    call("header", "CardHeader", [q("Books to read")]),
+    call("list", "ListBlock", [refs(names), q("The list")]),
   )
   return program(lines)
 }
@@ -110,74 +91,49 @@ function schedule(): string {
     const days = [...new Set(weekGames.map((game) => game.day))]
     const dayNames = days.map((day, dayIndex) => {
       const dayName = `${name}Day${dayIndex}`
-      const dayGames = weekGames.filter((game) => game.day === day)
-      const gameNames = dayGames.map((game, gameIndex) => {
-        const gameName = `${dayName}Game${gameIndex}`
-        lines.push(call(gameName, "Row", [refs([`${gameName}Time`, `${gameName}Match`, `${gameName}Tv`]), "12", q("center"), q("space-between")]))
-        lines.push(call(`${gameName}Time`, "Text", [q(game.time)]))
-        lines.push(call(`${gameName}Match`, "Text", [q(`${game.away} at ${game.home}`)]))
-        lines.push(call(`${gameName}Tv`, "Badge", [q(game.tv), q("secondary")]))
-        return gameName
-      })
-      lines.push(call(dayName, "Stack", [refs([`${dayName}Title`, `${dayName}Games`]), "8"]))
-      lines.push(call(`${dayName}Title`, "H3", [q(day)]))
-      lines.push(call(`${dayName}Games`, "Stack", [refs(gameNames), "8"]))
+      const gameNames = weekGames
+        .filter((game) => game.day === day)
+        .map((game, gameIndex) => {
+          const gameName = `${dayName}Game${gameIndex}`
+          lines.push(listItem(gameName, `${game.away} at ${game.home}`, game.time, game.tv))
+          return gameName
+        })
+      lines.push(call(dayName, "ListBlock", [refs(gameNames), q(day)]))
       return dayName
     })
-    lines.push(call(name, "TabItem", [q(week), q(`Week ${week}`), refs([`${name}Body`])]))
-    lines.push(call(`${name}Body`, "Stack", [refs([`${name}Count`, ...dayNames]), "16"]))
-    lines.push(call(`${name}Count`, "Text", [q(`${weekGames.length} games`), q("muted")]))
+    lines.push(call(name, "TabItem", [q(`Week ${week}`), refs(dayNames)]))
     return name
   })
   lines.push(
-    call("root", "Stack", [refs(["header", "weekTabs"]), "16"]),
-    call("header", "Stack", [refs(["title", "status"]), "4"]),
-    call("title", "H1", [q("2026 NFL Schedule")]),
-    call("status", "Text", [q("Week by week"), q("muted")]),
-    call("weekTabs", "Tabs", [refs(weekNames), q("1")]),
+    call("root", "Card", [refs(["header", "tabs"])]),
+    call("header", "CardHeader", [q("2026 NFL Schedule")]),
+    call("tabs", "Tabs", [refs(weekNames)]),
   )
   return program(lines)
 }
 
 function brief(): string {
   const lines: string[] = []
-  const sections = ["Side by side", ...apartments.map((place) => place.heading), "Before you go"]
-  const contentNames = sections.map((section, index) => {
-    const name = `nav${index}`
-    lines.push(call(name, "Row", [refs([`${name}N`, `${name}T`]), "16", q("center")]))
-    lines.push(call(`${name}N`, "Text", [q(String(index + 1).padStart(2, "0")), q("muted"), q("small")]))
-    lines.push(call(`${name}T`, "Text", [q(section)]))
+  const compareNames = apartments.map((place, index) => {
+    const name = `compare${index}`
+    const outdoor = apartmentRows[2]?.[index + 1] ?? ""
+    lines.push(listItem(name, place.heading, outdoor === "No" ? "No outdoor space" : outdoor, place.facts[0]?.value))
     return name
   })
   const placeNames = apartments.map((place) => {
     const name = place.id
-    const factNames = place.facts.map((fact, index) => {
-      const factName = `${name}Fact${index}`
-      lines.push(call(factName, "Stat", [q(fact.value), q(fact.label)]))
-      return factName
-    })
-    const heading = place.pick ? `${name}Heading` : `${name}Title`
-    if (place.pick) {
-      lines.push(call(heading, "Row", [refs([`${name}Title`, `${name}Pick`]), "8", q("center")]))
-      lines.push(call(`${name}Pick`, "Badge", [q("Pick")]))
-    }
-    lines.push(call(`${name}Title`, "H2", [q(place.heading)]))
-    lines.push(call(`${name}Facts`, "Grid", [refs(factNames), "3", "12"]))
-    lines.push(call(`${name}Body`, "Text", [q(place.body)]))
-    lines.push(call(`${name}Link`, "Link", [q("Listing on RentHop"), q(place.href)]))
-    lines.push(call(name, "Stack", [refs([heading, `${name}Facts`, `${name}Body`, `${name}Link`]), "12"]))
+    lines.push(call(`${name}Title`, "TextContent", [q(place.heading), q("large-heavy")]))
+    lines.push(kv(`${name}Facts`, place.name, place.facts.map((fact) => [fact.label, fact.value])))
+    lines.push(call(`${name}Body`, "TextContent", [q(place.body)]))
     return name
   })
+  const sections = placeNames.flatMap((name) => [`${name}Title`, `${name}Facts`, `${name}Body`])
   lines.push(
-    call("root", "Stack", [refs(["title", "byline", "lede", "nav", "sideTitle", "compare", ...placeNames, "beforeTitle", "beforeBody"]), "20"]),
-    call("title", "H1", [q("Three West Village one-bedrooms")]),
-    call("byline", "Text", [q("All no fee, all available now, checked on RentHop Oct 12"), q("muted")]),
-    call("lede", "Text", [q("Leroy Street is the pick: the only one with outdoor space and a fireplace, and the laundry is in the unit. Morton is the cheapest at $5,200, but its photos are of another unit, staged.")]),
-    call("nav", "Stack", [refs(contentNames), "4"]),
-    call("sideTitle", "H2", [q("Side by side")]),
-    call("compare", "Table", [strs(["", ...apartments.map((place) => place.name)]), `[${apartmentRows.map((row) => strs(row)).join(", ")}]`]),
-    call("beforeTitle", "H2", [q("Before you go")]),
-    call("beforeBody", "Text", [q("None of the three lists a floor plan, so ask each agent for one. Confirm availability before applying; listing sites lag.")]),
+    call("root", "Card", [refs(["header", "lede", "compare", ...sections, "before"])]),
+    call("header", "CardHeader", [q("Three West Village one-bedrooms")]),
+    call("lede", "TextContent", [q("Leroy Street is the pick: the only one with outdoor space and a fireplace, and the laundry is in the unit. Morton is the cheapest at $5,200, but its photos are of another unit, staged.")]),
+    call("compare", "ListBlock", [refs(compareNames), q("Side by side")]),
+    call("before", "TextCallout", [q("neutral"), q("Before you go"), q("None of the three lists a floor plan, so ask each agent for one. Confirm availability before applying.")]),
   )
   return program(lines)
 }
@@ -186,60 +142,40 @@ function recipe(): string {
   const lines: string[] = []
   const itemNames = recipeItems.map((item, index) => {
     const name = `item${index}`
-    lines.push(call(name, "Checkbox", item.done ? [q(item.name), "true"] : [q(item.name)]))
+    lines.push(listItem(name, item.name, undefined, item.done ? "Got" : undefined))
     return name
   })
   const stepNames = recipeSteps.map((step, index) => {
     const name = `step${index}`
-    lines.push(call(name, "Row", [refs([`${name}N`, `${name}T`]), "12", q("start")]))
-    lines.push(call(`${name}N`, "Text", [q(String(index + 1).padStart(2, "0")), q("muted"), q("small")]))
-    lines.push(call(`${name}T`, "Text", [q(step)]))
-    return name
-  })
-  const contents = ["What to buy", "Method", "Dad's one rule"]
-  const navNames = contents.map((section, index) => {
-    const name = `nav${index}`
-    lines.push(call(name, "Row", [refs([`${name}N`, `${name}T`]), "16"]))
-    lines.push(call(`${name}N`, "Text", [q(String(index + 1).padStart(2, "0")), q("muted"), q("small")]))
-    lines.push(call(`${name}T`, "Text", [q(section)]))
+    lines.push(listItem(name, step, undefined, String(index + 1).padStart(2, "0")))
     return name
   })
   lines.push(
-    call("root", "Stack", [refs(["title", "byline", "stats", "lede", "nav", "buyTitle", "buyList", "methodTitle", "method", "rule"]), "20"]),
-    call("title", "H1", [q("Dad's chili")]),
-    call("byline", "Text", [q("Serves 6, about 45 minutes"), q("muted")]),
-    call("stats", "Grid", [refs(["serves", "time", "heat"]), "3", "12"]),
-    call("serves", "Stat", [q("6"), q("Serves")]),
-    call("time", "Stat", [q("45 min"), q("Time")]),
-    call("heat", "Stat", [q("Medium"), q("Heat")]),
-    call("lede", "Text", [q("The Sunday pot, the way Dad makes it: brown the beef hard, let the beans go in late, and give it the full simmer.")]),
-    call("nav", "Stack", [refs(navNames), "4"]),
-    call("buyTitle", "H2", [q("What to buy")]),
-    call("buyList", "Stack", [refs(itemNames), "8"]),
-    call("methodTitle", "H2", [q("Method")]),
-    call("method", "Stack", [refs(stepNames), "12"]),
-    call("rule", "Alert", [q("Dad's one rule"), q("Chili is better the second day, so make it the day before.")]),
+    call("root", "Card", [refs(["header", "facts", "lede", "buy", "method", "rule"])]),
+    call("header", "CardHeader", [q("Dad's chili")]),
+    kv("facts", "The pot", [
+      ["Serves", "6"],
+      ["Time", "45 min"],
+      ["Heat", "Medium"],
+    ]),
+    call("lede", "TextContent", [q("The Sunday pot, the way Dad makes it: brown the beef hard, let the beans go in late, and give it the full simmer.")]),
+    call("buy", "ListBlock", [refs(itemNames), q("What to buy")]),
+    call("method", "ListBlock", [refs(stepNames), q("Method")]),
+    call("rule", "TextCallout", [q("info"), q("Dad's one rule"), q("Chili is better the second day, so make it the day before.")]),
   )
   return program(lines)
 }
 
 function tonight(): string {
-  const lines: string[] = []
-  const factNames = dinnerFacts.map(([label, value], index) => {
-    const name = `fact${index}`
-    lines.push(call(`${name}Label`, "Text", [q(label), q("muted")]))
-    lines.push(call(`${name}Value`, "Text", [q(value)]))
-    return [`${name}Label`, `${name}Value`]
-  })
-  lines.push(
-    call("root", "Stack", [refs(["kicker", "title", "when", "rule", "facts", "foot"]), "16"]),
-    call("kicker", "Text", [q("Tonight"), q("muted"), q("small")]),
-    call("title", "H1", [q("Dinner at Nopa")]),
-    call("when", "Stat", [q("7:30 PM"), q("Table for six")]),
-    call("rule", "Separator"),
-    call("facts", "Grid", [refs(factNames.flat()), q("auto minmax(0, 1fr)"), "12"]),
-    call("foot", "Text", [q("Text Caddy to move it."), q("muted"), q("small")]),
-  )
+  const lines: string[] = [
+    call("nopa", "MapMarker", [q("Nopa"), "37.7749", "-122.4376"]),
+    call("root", "Card", [refs(["header", "when", "facts", "map", "foot"])]),
+    call("header", "CardHeader", [q("Dinner at Nopa")]),
+    call("when", "TextContent", [q("7:30 PM, table for six"), q("large-heavy")]),
+    kv("facts", "The table", dinnerFacts),
+    call("map", "Map", [refs(["nopa"])]),
+    call("foot", "TextContent", [q("Text Caddy to move it."), q("small")]),
+  ]
   return program(lines)
 }
 
@@ -252,50 +188,77 @@ function rsvp(): string {
   const lines: string[] = []
   const responseNames = rsvpSeed.map((response, index) => {
     const name = `who${index}`
-    lines.push(call(name, "Stack", [refs([`${name}Name`, `${name}Detail`]), "2"]))
-    lines.push(call(`${name}Name`, "Text", [q(response.name)]))
-    lines.push(call(`${name}Detail`, "Text", [q(standing(response)), q("muted"), q("small")]))
+    lines.push(listItem(name, response.name, standing(response)))
     return name
   })
   const nightNames = nights.map((night, index) => {
     const name = `night${index}`
-    lines.push(call(name, "Checkbox", [q(night)]))
+    lines.push(call(name, "Toggle", [q(night), "false"]))
     return name
   })
   lines.push(
-    call("root", "Stack", [refs(["title", "intro", "nameLabel", "nameField", "comingLabel", "comingField", "nightsLabel", "nightsFields", "kidsLabel", "kidsField", "noteLabel", "noteField", "send", "soFar"]), "16"]),
-    call("title", "H1", [q("Cabin weekend")]),
-    call("intro", "Text", [q("Two quick questions so we can book."), q("muted")]),
-    call("nameLabel", "Text", [q("Your name"), q("muted"), q("small")]),
-    call("nameField", "TextInput", [q("So we know who answered")]),
-    call("comingLabel", "Text", [q("Can you make it?"), q("muted"), q("small")]),
-    call("comingField", "Select", [`[${option("yes", "Yes")}, ${option("no", "No")}]`, q("Yes or no")]),
-    call("nightsLabel", "Text", [q("Which nights work?"), q("muted"), q("small")]),
-    call("nightsFields", "Stack", [refs(nightNames), "8"]),
-    call("kidsLabel", "Text", [q("Bringing kids?"), q("muted"), q("small")]),
-    call("kidsField", "Select", [`[${option("yes", "Yes")}, ${option("no", "No")}]`, q("Yes or no")]),
-    call("noteLabel", "Text", [q("Anything we should know?"), q("muted"), q("small")]),
-    call("noteField", "TextArea", [q("Allergies, arrival time")]),
-    call("send", "Button", [q("Send")]),
-    call("soFar", "Card", [refs(["soFarHead", "soFarBody"])]),
-    call("soFarHead", "CardHeader", [q("So far")]),
-    call("soFarBody", "CardBody", [refs(["soFarList"])]),
-    call("soFarList", "Stack", [refs(responseNames), "12"]),
+    call("root", "Card", [refs(["header", "intro", "soFar", "nights", "note"])]),
+    call("header", "CardHeader", [q("Cabin weekend")]),
+    call("intro", "TextContent", [q("Two quick questions so we can book."), q("small")]),
+    call("soFar", "ListBlock", [refs(responseNames), q("So far")]),
+    call("nights", "ListBlock", [refs(nightNames), q("Which nights work")]),
+    call("note", "TextCallout", [q("neutral"), q("Bring the kids?"), q("Say so when you reply. Allergies and arrival time too.")]),
   )
   return program(lines)
 }
 
-function option(value: string, label: string): string {
-  return `{ value: ${q(value)}, label: ${q(label)} }`
+function cabins(): string {
+  const lines: string[] = []
+  const names = ["Pine Lodge", "Creekside", "Ridge House"].map((name, index) => {
+    const id = `cabin${index}`
+    const details = cabinRows.map((row) => `${row[0]} ${row[index + 1]}`).join(" · ")
+    lines.push(listItem(id, name, details, cabinRows[1]?.[index + 1]))
+    return id
+  })
+  lines.push(
+    call("pine", "MapMarker", [q("Pine Lodge"), "39.242", "-120.028"]),
+    call("creek", "MapMarker", [q("Creekside"), "39.328", "-120.183"]),
+    call("ridge", "MapMarker", [q("Ridge House"), "38.940", "-119.960"]),
+    call("root", "Card", [refs(["header", "list", "map"])]),
+    call("header", "CardHeader", [q("Tahoe cabins")]),
+    call("list", "ListBlock", [refs(names), q("The three")]),
+    call("map", "Map", [refs(["pine", "creek", "ridge"])]),
+  )
+  return program(lines)
 }
 
-function cabins(): string {
+function heaterNote(): string {
+  const body = [
+    "The boiler at Pine Lodge short-cycles if it chases the set point. It doesn't. It holds a deadband and keeps doing what it was already doing.",
+    "",
+    "Call the set point $S$ and the gap $g$. Heat starts below the band and stops above it.",
+    "",
+    "$$",
+    heater.on,
+    "$$",
+    "",
+    "$$",
+    heater.off,
+    "$$",
+    "",
+    "```",
+    heater.code,
+    "```",
+    "",
+    "At $S = 68$ and $g = 2$, the boiler kicks on at 67°F and cuts out at 69°F.",
+    "",
+    "The coast back down takes about",
+    "",
+    "$$",
+    heater.coast,
+    "$$",
+    "",
+    "where $C$ is the heat the room holds and $P$ is how fast the boiler puts it back. A wider gap means fewer starts, and a longer wait.",
+  ].join("\n")
   return program([
-    call("root", "Stack", [refs(["header", "compare"]), "16"]),
-    call("header", "Stack", [refs(["title", "status"]), "4"]),
-    call("title", "H1", [q("Tahoe cabins")]),
-    call("status", "Text", [q("The Pine Lodge: a hot tub, eight beds, and twelve minutes to the lift."), q("muted")]),
-    call("compare", "Table", [strs(cabinHeaders), `[${cabinRows.map((row) => strs(row)).join(", ")}]`]),
+    call("root", "Card", [refs(["header", "body"])]),
+    call("header", "CardHeader", [q("The cabin heater")]),
+    call("body", "Markdown", [q(body)]),
   ])
 }
 
@@ -308,4 +271,5 @@ export const openuiSources: Record<ShowcaseKind, string> = {
   tonight: tonight(),
   rsvp: rsvp(),
   cabins: cabins(),
+  heater: heaterNote(),
 }

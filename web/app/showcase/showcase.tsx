@@ -4,7 +4,7 @@ import dynamic from "next/dynamic"
 import type { ReactNode } from "react"
 import { cn } from "cn"
 import { openuiSources } from "./openui-apps"
-import { BooksApp, BriefApp, CabinsApp, GroceriesApp, RecipeApp, RsvpApp, ScheduleApp, TonightApp } from "./react-apps"
+import { BooksApp, BriefApp, CabinsApp, GroceriesApp, HeaterApp, RecipeApp, RsvpApp, ScheduleApp, TonightApp } from "./react-apps"
 import { showcaseMeta, type ShowcaseKind } from "./data"
 
 const OpenUIPane = dynamic(() => import("./openui-pane").then((mod) => mod.OpenUIPane), {
@@ -21,6 +21,7 @@ const views = {
   tonight: TonightApp,
   rsvp: RsvpApp,
   cabins: CabinsApp,
+  heater: HeaterApp,
 } satisfies Record<ShowcaseKind, () => ReactNode>
 
 export function Showcase() {
