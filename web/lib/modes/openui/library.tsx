@@ -56,12 +56,12 @@ const groups: ComponentGroup[] = [
   {
     name: "Drawing",
     components: ["Svg", "G", "Circle", "Ellipse", "Rect", "Line", "Path", "Polyline", "Polygon", "SvgText"],
-    notes: ['Put shapes inside Svg. Color is "ink", "muted", "surface", "info", "success", "warning", "danger", or a CSS color.'],
+    notes: ['Put shapes inside Svg. Color is "ink", "muted", "surface", "info", "success", "warning", "danger", "accent", "navy", "pine", "chestnut", "marigold", "lavender", "pistachio", "rose", or a CSS color.'],
   },
   {
     name: "Buttons",
     components: ["Buttons", "Button"],
-    notes: ["Put Button components inside Buttons. There are no form fields."],
+    notes: ["Put Button components inside Buttons. One primary per screen; a second strong action is fill. There are no form fields."],
   },
 ]
 

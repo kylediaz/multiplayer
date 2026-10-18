@@ -49,7 +49,7 @@ compare = Table(${v(["", ...cabins.map((cabin) => cabin.name.split(" ")[0])])}, 
   ["Lift", ...cabins.map((cabin) => `${cabin.lift} min`)],
 ])})
 map = Map(@Each(options, "c", MapMarker(c.name, c.lat, c.lng, null, "🏡")), false, $cabin, 240)
-choose = Buttons(@Each(options, "c", Button(c.name, @Set($cabin, c.name), $cabin == c.name ? "primary" : "secondary", "normal", "small")))
+choose = Buttons(@Each(options, "c", Button(c.name, @Set($cabin, c.name), $cabin == c.name ? "fill" : "secondary", "normal", "small")))
 picked = @Find(options, "name", $cabin)
 photo = ImageBlock(picked.photo, picked.name + ", " + picked.where)
 cost = KVList([{label: "Three nights", value: @Format(picked.night * 3, "currency", 0)}, {label: "Split six ways", value: @Format(picked.night * 3 / 6, "currency", 0)}, {label: "Beds for six", value: picked.beds >= 6 ? "Enough" : "Short " + (6 - picked.beds)}], picked.name)
@@ -93,7 +93,7 @@ root = Card([header, pot, adjust, units, shopping, method, rule])
 header = CardHeader("Dad's chili")
 pot = KVList([{label: "Serves", value: @Plural($serves, "person", "people")}, {label: "Time", value: "45 min"}, {label: "Pot", value: $serves > 8 ? "The big one" : "The usual"}], "The pot")
 adjust = Buttons([Button("Fewer", @Set($serves, @Clamp($serves - 2, 2, 16)), "secondary"), Button("More", @Set($serves, @Clamp($serves + 2, 2, 16)), "secondary")])
-units = Buttons([Button("US", @Set($metric, false), $metric ? "tertiary" : "primary", "normal", "small"), Button("Metric", @Set($metric, true), $metric ? "primary" : "tertiary", "normal", "small")])
+units = Buttons([Button("US", @Set($metric, false), $metric ? "tertiary" : "fill", "normal", "small"), Button("Metric", @Set($metric, true), $metric ? "fill" : "tertiary", "normal", "small")])
 pantry = ${v(chili)}
 scale = $serves / 6
 shopping = ListBlock(@Each(pantry, "i", ListItem(i.name, null, null, $metric && i.metric != "" ? @Format(@Convert(i.amount * scale, i.unit, i.metric), "number", i.metricPlaces) + " " + i.metric : @Trim(@Format(i.amount * scale, "number", i.places) + " " + i.unit))), "Shopping for " + $serves)
@@ -107,7 +107,7 @@ header = CardHeader("Splitting Pine Lodge")
 guests = ${v(stays)}
 total = 640 * 3 + 180
 bill = KVList([{label: "Three nights", value: @Format(640 * 3, "currency", 0)}, {label: "Cleaning", value: @Format(180, "currency", 0)}, {label: "Total", value: @Format(total, "currency", 0)}], "The bill")
-choose = Buttons([Button("By nights", @Set($mode, "nights"), $mode == "nights" ? "primary" : "secondary", "normal", "small"), Button("Evenly", @Set($mode, "even"), $mode == "even" ? "primary" : "secondary", "normal", "small")])
+choose = Buttons([Button("By nights", @Set($mode, "nights"), $mode == "nights" ? "fill" : "secondary", "normal", "small"), Button("Evenly", @Set($mode, "even"), $mode == "even" ? "fill" : "secondary", "normal", "small")])
 shares = $mode == "even" ? @Allocate(total, [1, 1, 1, 1]) : @Allocate(total, guests.nights)
 top = @Max(shares)
 chart = Svg(@Each(@Range(0, @Count(guests)), "i", G([SvgText(guests[i].name, 0, i * 40 + 22, 14, "ink", "start", "medium"), Rect(64, i * 40 + 6, shares[i] / top * 176, 24, "info", null, null, null, 6), SvgText(@Format(shares[i], "currency", 0), 64 + shares[i] / top * 176 + 8, i * 40 + 23, 13, "muted")])), "0 0 320 160")

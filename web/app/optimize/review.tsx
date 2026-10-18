@@ -4,8 +4,7 @@ import { useLayoutEffect, useRef, useState } from "react"
 import { cn } from "cn"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { ArrowRight01Icon } from "@hugeicons/core-free-icons"
+import { ChevronRight } from "lucide-react"
 import type { DocumentLang } from "@shared/lang"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -118,7 +117,7 @@ function ReviewPair({ review }: { review: Review }) {
           </ToggleGroup>
           <Button type="submit" disabled={pending || !choice}>
             {pending ? "Saving" : "Save and next"}
-            {pending ? <Spinner /> : <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} data-icon="inline-end" />}
+            {pending ? <Spinner /> : <ChevronRight strokeWidth={2} data-icon="inline-end" />}
           </Button>
         </div>
         <Textarea

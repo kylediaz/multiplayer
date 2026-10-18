@@ -8,19 +8,19 @@ export function Tabs({ tabs }: { tabs: { label: string; children?: ReactNode }[]
   const current = tabs[index]
   return (
     <div>
-      <div className="flex gap-0.5 rounded-xl bg-muted p-0.5">
+      <div className="flex gap-0.5 rounded-xl bg-secondary p-0.5">
         {tabs.map((tab, item) => (
           <button
             key={tab.label || item}
             type="button"
-            className={`min-w-0 flex-1 truncate rounded-xl px-1 py-1.5 text-center text-[13px] font-semibold text-foreground ${item === index ? "bg-background" : ""}`}
+            className={`min-w-0 flex-1 truncate rounded-xl px-1 py-2 text-center text-[13px] font-semibold ${item === index ? "bg-tint text-on-tint" : "text-muted-foreground"}`}
             onClick={() => setActive(item)}
           >
             {tab.label || `Tab ${item + 1}`}
           </button>
         ))}
       </div>
-      <div className="mt-3 flex flex-col gap-3.5">{current?.children}</div>
+      <div className="mt-4 flex flex-col gap-4">{current?.children}</div>
     </div>
   )
 }

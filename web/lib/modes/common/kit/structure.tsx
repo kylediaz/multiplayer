@@ -18,12 +18,13 @@ const calloutIcons = {
   danger: "octagon-alert",
 } as const
 
+// Each variant is a wash behind the row and the color its title and glyph take.
 const calloutTones = {
-  neutral: "bg-muted-foreground",
-  info: "bg-primary",
-  success: "bg-foreground",
-  warning: "bg-muted-foreground",
-  danger: "bg-destructive",
+  neutral: { wash: "bg-muted", text: "text-foreground" },
+  info: { wash: "bg-tint/10", text: "text-tint" },
+  success: { wash: "bg-success-fill", text: "text-success" },
+  warning: { wash: "bg-marigold/15", text: "text-marigold" },
+  danger: { wash: "bg-destructive/10", text: "text-destructive" },
 } as const
 
 export const textStyles = ["small", "default", "large", "small-heavy", "large-heavy"] as const
@@ -33,7 +34,7 @@ export type CalloutVariant = (typeof calloutVariants)[number]
 
 export function Card({ children }: { children?: ReactNode }) {
   return (
-    <div className="flex flex-col gap-4 text-foreground" style={{ fontSize: rootFontSize }}>
+    <div className="flex flex-col gap-5 text-foreground" style={{ fontSize: rootFontSize }}>
       {children}
     </div>
   )
@@ -42,7 +43,7 @@ export function Card({ children }: { children?: ReactNode }) {
 export function CardHeader({ title }: { title: string }) {
   return (
     <header className="mt-10 px-0.5 pb-1">
-      <h1 className="text-[2.75em] leading-none font-light tracking-tight text-foreground">{title}</h1>
+      <h1 className="text-[2.125em] leading-[1.1] font-bold tracking-[-0.02em] text-foreground">{title}</h1>
     </header>
   )
 }
@@ -53,12 +54,12 @@ export function TextContent({ text, style = "default" }: { text: string; style?:
 
 export function TextCallout({ variant, title, description }: { variant: CalloutVariant; title: string; description?: string }) {
   return (
-    <div className="flex items-start gap-3 rounded-2xl bg-muted px-3.5 py-3">
-      <span className={`mt-px flex size-7 shrink-0 items-center justify-center rounded-full text-background ${calloutTones[variant]}`}>
-        <Glyph name={calloutIcons[variant]} size={16} />
+    <div className={`flex items-start gap-3 rounded-2xl px-4 py-4 ${calloutTones[variant].wash}`}>
+      <span className={`mt-0.5 shrink-0 ${calloutTones[variant].text}`}>
+        <Glyph name={calloutIcons[variant]} size={18} />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-sm leading-snug font-semibold text-foreground">{title}</p>
+        <p className={`text-sm leading-snug font-semibold ${calloutTones[variant].text}`}>{title}</p>
         {description ? <p className="mt-0.5 text-[13px] leading-snug text-muted-foreground">{description}</p> : null}
       </div>
     </div>

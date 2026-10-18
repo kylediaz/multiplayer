@@ -1,6 +1,6 @@
 import { Children, type ReactNode } from "react"
 
-export const buttonVariants = ["primary", "secondary", "tertiary"] as const
+export const buttonVariants = ["primary", "fill", "secondary", "tertiary"] as const
 export const buttonTypes = ["normal", "destructive"] as const
 export const buttonSizes = ["extra-small", "small", "medium", "large"] as const
 
@@ -22,21 +22,37 @@ export function Button({
   onClick?: () => void
 }) {
   const destructive = type === "destructive"
-  const compact = size === "extra-small" || size === "small"
+  // Caddy's signed-in capsules: 56 for a page action, 50 for a card's, 44 for a row's, and a 36 chip.
+  const shape =
+    size === "large"
+      ? "h-14 px-7 text-[20px]"
+      : size === "medium"
+        ? "h-[50px] px-[18px] text-[15px]"
+        : size === "small"
+          ? "h-11 px-3 text-[15px]"
+          : "h-9 px-3 text-[13px]"
+  // primary is the one cornflower glass capsule on a screen; secondary is the quiet glass under it;
+  // fill is the ink bar for a second strong action; tertiary is text.
   const tone =
     variant === "primary"
       ? destructive
-        ? "bg-destructive text-primary-foreground"
-        : "bg-primary text-primary-foreground"
+        ? "glass-capsule glass-danger"
+        : "glass-capsule glass-primary"
       : variant === "secondary"
-        ? "bg-muted text-foreground"
-        : destructive
-          ? "bg-transparent text-destructive"
-          : "bg-transparent text-foreground"
+        ? destructive
+          ? "glass-capsule text-destructive"
+          : "glass-capsule"
+        : variant === "fill"
+          ? destructive
+            ? "bg-destructive text-destructive-foreground"
+            : "bg-primary text-primary-foreground"
+          : destructive
+            ? "bg-transparent text-destructive"
+            : "bg-transparent text-foreground"
   return (
     <button
       type="button"
-      className={`w-full rounded-2xl text-center font-semibold active:opacity-75 ${compact ? "px-3.5 py-2 text-[13.5px]" : "px-4 py-3 text-[15px]"} ${tone}`}
+      className={`inline-flex w-full items-center justify-center gap-2 rounded-full leading-none font-bold whitespace-nowrap transition-[transform,background-color,box-shadow] duration-150 outline-none active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:bg-disabled-fill disabled:text-disabled-text ${shape} ${tone}`}
       onClick={onClick}
     >
       {label}
@@ -48,7 +64,7 @@ export function Buttons({ direction = "row", children }: { direction?: "row" | "
   const items = Children.toArray(children).filter(Boolean)
   const column = direction === "column"
   return (
-    <div className={column ? "flex flex-col gap-2" : "flex gap-2"}>
+    <div className={column ? "flex flex-col gap-3" : "flex gap-3"}>
       {items.map((button, index) => (
         <div key={index} className={column ? undefined : "min-w-0 flex-1"}>
           {button}

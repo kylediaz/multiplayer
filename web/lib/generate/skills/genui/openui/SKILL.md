@@ -37,7 +37,7 @@ The loop variable exists only inside the template, so write the template inline.
 
 Declare state at the top with `$name = value`. Buttons change it with @Set, and everything that reads it updates.
 
-- A choice is a row of Buttons. The chosen one is primary and the rest are secondary: `Button(c.name, @Set($cabin, c.name), $cabin == c.name ? "primary" : "secondary", "normal", "small")`.
+- A choice is a row of Buttons. The chosen one is fill and the rest are secondary: `Button(c.name, @Set($cabin, c.name), $cabin == c.name ? "fill" : "secondary", "normal", "small")`. primary is the cornflower bar for the one action a screen is for, at most once.
 - A stepper is two Buttons: `Button("More", @Set($serves, @Clamp($serves + 2, 2, 16)), "secondary")`.
 - A row that selects is a ListItem with an action: `ListItem(s.label, s.place, null, null, @Set($stop, s.label))`.
 - The detail is `picked = @Find(options, "name", $cabin)`, then `picked.photo` and `picked.night`.
@@ -52,7 +52,7 @@ Compute everything: @Sum, @Count, @Format(value, "currency", 0), @Convert(miles,
 
 ## Drawing
 
-Svg is for charts, mechanisms, and anything that moves with state, because its shapes take expressions. Keep the viewBox about 320 wide so text stays in scale. Colors are "ink", "muted", "surface", "info", "warning", and "danger". info is the accent.
+Svg is for charts, mechanisms, and anything that moves with state, because its shapes take expressions. Keep the viewBox about 320 wide so text stays in scale. Colors are "ink", "muted", "surface", "info" (navy), "success" (pine), "warning" (marigold), "danger", "accent" (cornflower), and the fills "lavender", "pistachio", and "rose". Navy is the mark; cornflower is only for the one thing to tap.
 
 A bar chart from two lists:
 

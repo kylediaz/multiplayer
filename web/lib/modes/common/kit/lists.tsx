@@ -6,7 +6,7 @@ export type ListLeading = string | { src: string; alt?: string }
 function Group({ header, children }: { header?: string | null; children: ReactNode }) {
   return (
     <section>
-      {header ? <p className="mb-1.5 ml-4 text-xs font-semibold tracking-wide text-muted-foreground uppercase">{header}</p> : null}
+      {header ? <p className="mb-2 ml-4 text-xs font-semibold tracking-wide text-muted-foreground uppercase">{header}</p> : null}
       <div className="overflow-hidden rounded-2xl bg-muted">{children}</div>
     </section>
   )
@@ -43,7 +43,7 @@ export function ListItem({
       ) : null}
     </>
   )
-  const className = "flex w-full items-start gap-3 px-4 py-2.5 text-left"
+  const className = "flex w-full items-start gap-3.5 px-4 py-3.5 text-left"
   if (!onClick) return <div className={className}>{row}</div>
   return (
     <button type="button" className={`${className} active:bg-background`} onClick={onClick}>
@@ -70,7 +70,7 @@ export function KVList({ rows, header }: { rows: { label: string; value: string 
   return (
     <Group header={header}>
       {items.map((row, index) => (
-        <div key={index} className={`flex items-baseline justify-between gap-3.5 px-4 py-2.5 ${index > 0 ? "border-t border-border" : ""}`}>
+        <div key={index} className={`flex items-baseline justify-between gap-4 px-4 py-3.5 ${index > 0 ? "border-t border-border" : ""}`}>
           <span className="text-sm text-muted-foreground">{row.label}</span>
           <span className="min-w-0 flex-1 text-right text-sm font-medium text-foreground tabular-nums">{row.value}</span>
         </div>
