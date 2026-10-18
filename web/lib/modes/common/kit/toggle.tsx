@@ -23,7 +23,7 @@ export function Toggle({
       type="button"
       role="switch"
       aria-checked={checked}
-      className="flex w-full items-center gap-3 px-4 py-2.5 text-left"
+      className="flex w-full items-center gap-3.5 px-4 py-3.5 text-left"
       onClick={() => {
         const next = !checked
         if (onChange) onChange(next)

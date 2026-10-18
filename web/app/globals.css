@@ -39,6 +39,26 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-tint: var(--tint);
+  --color-on-tint: var(--on-tint);
+  --color-success: var(--success);
+  --color-success-fill: var(--success-fill);
+  --color-divider: var(--divider);
+  --color-disabled-fill: var(--disabled-fill);
+  --color-disabled-text: var(--disabled-text);
+  --color-cornflower: var(--cornflower);
+  --color-on-cornflower: var(--on-cornflower);
+  --color-navy: var(--navy);
+  --color-pine: var(--pine);
+  --color-chestnut: var(--chestnut);
+  --color-marigold: var(--marigold);
+  --color-lavender: var(--lavender);
+  --color-pistachio: var(--pistachio);
+  --color-rose: var(--rose);
+  --color-imessage-sent: var(--imessage-sent);
+  --color-imessage-sent-foreground: var(--imessage-sent-foreground);
+  --color-imessage-received: var(--imessage-received);
+  --color-imessage-received-foreground: var(--imessage-received-foreground);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -48,75 +68,144 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * Caddy's signed-in palette. The same values iOS (CaddySignedInPalette), the
+ * web dashboard, and Caddy's generated pages share: a white canvas in light,
+ * the ink canvas in dark, and every secondary color mixed from the text.
+ * Cornflower is the one action accent; the tint (navy) marks selection.
+ */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  color-scheme: light dark;
+  --ink: #1e1e1e;
+  --off-white: #f4f1ec;
+  --paper: #f8f7f4;
+  --cornflower: #96c5f9;
+  --on-cornflower: #1e1e1e;
+  --navy: light-dark(#254b84, #9dbdf0);
+  --pine: light-dark(#457958, #8fc4a0);
+  --chestnut: light-dark(#a96948, #c9916d);
+  --marigold: light-dark(#c9742a, #e0a063);
+  --lavender: #c8b3d3;
+  --pistachio: #bed599;
+  --rose: #c29b92;
+
+  --background: light-dark(#ffffff, var(--ink));
+  --foreground: light-dark(var(--ink), var(--off-white));
+  --card: light-dark(#ffffff, color-mix(in srgb, var(--off-white) 6%, var(--ink)));
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+  --primary: light-dark(var(--ink), var(--off-white));
+  --primary-foreground: light-dark(var(--paper), var(--ink));
+  --secondary: light-dark(color-mix(in srgb, var(--ink) 7%, #ffffff), color-mix(in srgb, var(--off-white) 9%, var(--ink)));
+  --secondary-foreground: var(--foreground);
+  --muted: light-dark(color-mix(in srgb, var(--ink) 4%, #ffffff), color-mix(in srgb, var(--off-white) 10%, var(--ink)));
+  --muted-foreground: color-mix(in srgb, var(--foreground) 72%, transparent);
+  --accent: var(--secondary);
+  --accent-foreground: var(--foreground);
+  --destructive: light-dark(#d23b2f, #f08c84);
+  --destructive-foreground: light-dark(#ffffff, var(--ink));
+  --success: light-dark(#315b40, #b9d5c0);
+  --success-fill: light-dark(#e5f0e8, #263c2d);
+  --border: color-mix(in srgb, var(--foreground) 12%, transparent);
+  --divider: color-mix(in srgb, var(--foreground) 8%, transparent);
+  --input: var(--border);
+  --ring: var(--cornflower);
+  --tint: var(--navy);
+  /* The deep tints lift to pastels on ink, so their label flips to ink with them. */
+  --on-tint: light-dark(var(--paper), var(--ink));
+  --disabled-fill: light-dark(#e2e2e2, #363636);
+  --disabled-text: light-dark(#989898, #808080);
+  --imessage-sent: #468cf7;
+  --imessage-sent-foreground: #ffffff;
+  --imessage-received: light-dark(#e9e9eb, #3b3b3d);
+  --imessage-received-foreground: light-dark(#1a1a1a, var(--off-white));
+  /* Liquid Glass, as Caddy's signed-in capsules draw it: a translucent fill
+     over a backdrop blur, a hairline, an inner highlight, a soft shadow. A
+     tint is a gradient laid over the fill. */
+  --glass-blur: blur(20px) saturate(160%);
+  --glass-fill: light-dark(rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.1));
+  --glass-fill-hover: light-dark(rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.14));
+  --glass-hairline: light-dark(rgba(30, 30, 30, 0.1), rgba(244, 241, 236, 0.09));
+  --glass-highlight: inset 0 1px 0 light-dark(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.05));
+  --glass-shadow: 0 2px 10px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.4));
+  --glass-tint-primary: light-dark(color-mix(in srgb, var(--cornflower) 62%, transparent), color-mix(in srgb, var(--cornflower) 92%, transparent));
+  --glass-tint-danger: color-mix(in srgb, var(--destructive) 32%, transparent);
+  --danger-on-glass: light-dark(#a80008, #ffd9d5);
+  --chart-1: var(--navy);
+  --chart-2: var(--pine);
+  --chart-3: var(--chestnut);
+  --chart-4: var(--marigold);
+  --chart-5: var(--cornflower);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: var(--card);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
 }
 
+/* A forced scheme, for previews; otherwise the OS decides. */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  color-scheme: dark;
+}
+.light {
+  color-scheme: light;
+}
+
+/* Without a backdrop blur, or when the person asked for less transparency, glass goes near-opaque so labels keep their contrast. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root {
+    --glass-blur: none;
+    --glass-fill: light-dark(rgba(255, 255, 255, 0.94), rgba(54, 54, 54, 0.96));
+    --glass-fill-hover: light-dark(#ffffff, rgba(64, 64, 64, 0.98));
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass-blur: none;
+    --glass-fill: light-dark(rgba(255, 255, 255, 0.94), rgba(54, 54, 54, 0.96));
+    --glass-fill-hover: light-dark(#ffffff, rgba(64, 64, 64, 0.98));
+  }
+}
+
+@layer components {
+  /* The glass capsule. Tint and label come from the variant class. */
+  .glass-capsule {
+    --glass-tint: transparent;
+    --glass-label: var(--foreground);
+    border: 1px solid var(--glass-hairline);
+    background: linear-gradient(var(--glass-tint), var(--glass-tint)), var(--glass-fill);
+    box-shadow: var(--glass-highlight), var(--glass-shadow);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    color: var(--glass-label);
+  }
+  @media (hover: hover) {
+    .glass-capsule:not(:disabled):hover {
+      background: linear-gradient(var(--glass-tint), var(--glass-tint)), var(--glass-fill-hover);
+    }
+  }
+  .glass-primary {
+    --glass-tint: var(--glass-tint-primary);
+    --glass-label: var(--ink);
+  }
+  .glass-danger {
+    --glass-tint: var(--glass-tint-danger);
+    --glass-label: var(--danger-on-glass);
+  }
+  /* A disabled action is never glass: flat, no shadow, no blur. */
+  .glass-capsule:disabled {
+    background: var(--disabled-fill);
+    border-color: transparent;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    color: var(--disabled-text);
+  }
 }
 
 @layer base {
@@ -130,5 +219,11 @@
     @apply font-sans;
     font-size: 16px;
     overscroll-behavior-y: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition: none !important;
+    animation: none !important;
   }
 }

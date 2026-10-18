@@ -64,7 +64,7 @@ From "ui", use these components. Do not invent a second design system, and do no
 - Table. columns: string[]. rows: cells in column order. A cell is a string, a number, or a node. The table is the width of the card. Number columns align right.
 - Tabs. tabs: { label, children }[]. A full-width segmented bar. Each segment takes an equal share. The selected tab's children show below it. Selection stays on the page.
 - Buttons. direction?: "row" | "column". children are Button. row (the default) gives each child an equal share of the width. column stacks them.
-- Button. label: string. onClick?: () => void. variant?: "primary" | "secondary" | "tertiary". type?: "normal" | "destructive". size?: "extra-small" | "small" | "medium" | "large". A Button fills the width of its share. One button is a bar across the card. Two buttons in a row are two equal bars. primary is the filled bar, secondary is the muted bar, tertiary is text but still full width. It does not shrink to its label. Never place a Button beside an input, a checkbox, or a list row.
+- Button. label: string. onClick?: () => void. variant?: "primary" | "fill" | "secondary" | "tertiary". type?: "normal" | "destructive". size?: "extra-small" | "small" | "medium" | "large". A Button fills the width of its share. One button is a bar across the card. Two buttons in a row are two equal bars. primary is the one accent on a screen, the cornflower bar: the action the screen is for, at most once. fill is the ink bar for a second strong action, secondary is the muted bar, tertiary is text but still full width. It does not shrink to its label. Never place a Button beside an input, a checkbox, or a list row.
 
 ## Fields
 

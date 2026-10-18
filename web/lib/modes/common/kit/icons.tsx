@@ -29,19 +29,10 @@ export function Glyph({ name, size = 18, className }: { name: unknown; size?: nu
   )
 }
 
-const badgeTones = ["bg-primary", "bg-foreground", "bg-destructive", "bg-muted-foreground"]
-
 export function IconBadge({ name }: { name: string }) {
-  const tone = badgeTones[hash(name) % badgeTones.length]
   return (
-    <span className={`flex size-7 shrink-0 items-center justify-center rounded-md text-background ${tone}`}>
+    <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-secondary text-foreground">
       <Glyph name={name} size={15} />
     </span>
   )
-}
-
-function hash(name: string): number {
-  let value = 0
-  for (let index = 0; index < name.length; index++) value = (value * 31 + name.charCodeAt(index)) | 0
-  return Math.abs(value)
 }

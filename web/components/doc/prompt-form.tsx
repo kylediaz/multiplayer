@@ -2,8 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { AiMagicIcon, ArrowRight01Icon, CodeIcon, ReactIcon } from "@hugeicons/core-free-icons"
+import { Atom, ChevronRight, Code, Sparkles } from "lucide-react"
 import type { GenerationMode } from "@shared/lang"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -17,25 +16,25 @@ const MODES = [
   {
     id: "react",
     label: "React",
-    icon: ReactIcon,
+    icon: Atom,
     detail: "A React component styled with the canvas kit.",
   },
   {
     id: "decide",
     label: "Decide",
-    icon: AiMagicIcon,
+    icon: Sparkles,
     detail: "The model chooses React or OpenUI.",
   },
   {
     id: "openui",
     label: "OpenUI",
-    icon: CodeIcon,
+    icon: Code,
     detail: "An OpenUI program.",
   },
 ] as const satisfies ReadonlyArray<{
   id: GenerationMode
   label: string
-  icon: typeof ReactIcon
+  icon: typeof Atom
   detail: string
 }>
 
@@ -115,7 +114,7 @@ export function PromptForm() {
               >
                 {MODES.map((item) => (
                   <ToggleGroupItem key={item.id} value={item.id} className="flex-1">
-                    <HugeiconsIcon icon={item.icon} strokeWidth={2} />
+                    <item.icon strokeWidth={2} />
                     {item.label}
                   </ToggleGroupItem>
                 ))}
@@ -157,7 +156,7 @@ export function PromptForm() {
           </div>
           <Button type="submit" disabled={pending || !prompt.trim()}>
             {pending ? "Generating" : "Create document"}
-            {pending ? <Spinner /> : <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} data-icon="inline-end" />}
+            {pending ? <Spinner /> : <ChevronRight strokeWidth={2} data-icon="inline-end" />}
           </Button>
         </CardFooter>
       </Card>

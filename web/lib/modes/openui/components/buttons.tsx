@@ -10,7 +10,7 @@ function nodes(value: unknown): unknown[] {
 const buttonProps = z.object({
   label: z.string(),
   action: action().optional(),
-  variant: z.enum(["primary", "secondary", "tertiary"]).optional(),
+  variant: z.enum(["primary", "fill", "secondary", "tertiary"]).optional(),
   type: z.enum(["normal", "destructive"]).optional(),
   size: z.enum(["extra-small", "small", "medium", "large"]).optional(),
 })
@@ -20,7 +20,7 @@ export type ButtonProps = z.infer<typeof buttonProps>
 export const Button = defineComponent({
   name: "Button",
   props: buttonProps,
-  description: 'Button. variant: "primary", "secondary", or "tertiary". type: "normal" or "destructive". size: "extra-small", "small", "medium", or "large".',
+  description: 'Button. variant: "primary" (the one accent on a screen), "fill" (the ink bar), "secondary", or "tertiary". type: "normal" or "destructive". size: "extra-small", "small", "medium", or "large".',
   component: ButtonView,
 })
 

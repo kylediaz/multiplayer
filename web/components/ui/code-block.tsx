@@ -5,8 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
 import { Button } from "@/components/ui/button"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Tick02Icon, Copy01Icon } from "@hugeicons/core-free-icons"
+import { Check, Copy } from "lucide-react"
 
 const codeBlockVariants = cva(
   "group/code-block relative flex w-full min-w-0 flex-col overflow-hidden rounded-md text-sm has-[>[data-slot=code-block-content]:focus-visible]:ring-2 has-[>[data-slot=code-block-content]:focus-visible]:ring-ring/30 data-[size=sm]:text-xs",
@@ -123,9 +122,9 @@ function CodeBlockCopyButton({
         {...props}
       >
         {copied ? (
-          <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} />
+          <Check strokeWidth={2} />
         ) : (
-          <HugeiconsIcon icon={Copy01Icon} strokeWidth={2} />
+          <Copy strokeWidth={2} />
         )}
       </Button>
       <span aria-live="polite" className="sr-only">

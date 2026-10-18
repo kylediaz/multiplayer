@@ -24,7 +24,7 @@ export function Table({ columns, rows }: { columns: string[]; rows: unknown[][] 
         <thead>
           <tr>
             {head.map((column, index) => (
-              <th key={index} className={classes("px-4 py-2.5 text-left text-sm font-medium whitespace-nowrap text-muted-foreground", numeric[index] && "text-right tabular-nums")}>
+              <th key={index} className={classes("px-4 py-3.5 text-left text-sm font-medium whitespace-nowrap text-muted-foreground", numeric[index] && "text-right tabular-nums")}>
                 {column}
               </th>
             ))}
@@ -34,7 +34,7 @@ export function Table({ columns, rows }: { columns: string[]; rows: unknown[][] 
           {body.map((row, rowIndex) => (
             <tr key={rowIndex} className="border-t border-border">
               {head.map((_, column) => (
-                <td key={column} className={classes("px-4 py-2.5 text-left align-middle", numeric[column] && "text-right whitespace-nowrap tabular-nums")}>
+                <td key={column} className={classes("px-4 py-3.5 text-left align-middle", numeric[column] && "text-right whitespace-nowrap tabular-nums")}>
                   {cell(row[column])}
                 </td>
               ))}

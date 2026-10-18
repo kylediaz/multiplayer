@@ -12,7 +12,7 @@ export const ImageBlock = defineComponent({
   component: ({ props }) => (
     <figure className="relative aspect-video overflow-hidden rounded-2xl bg-muted">
       <img src={props.src} alt={props.caption ?? ""} className="size-full object-cover" />
-      {props.caption ? <figcaption className="absolute inset-x-0 bottom-0 bg-black/55 px-3.5 py-2.5 text-[15px] font-semibold text-white">{props.caption}</figcaption> : null}
+      {props.caption ? <figcaption className="absolute inset-x-0 bottom-0 bg-black/55 px-4 py-3 text-[15px] font-semibold text-white">{props.caption}</figcaption> : null}
     </figure>
   ),
 })
@@ -43,7 +43,7 @@ export const Bubbles = defineComponent({
           {message.time ? <p className="mt-2 mb-1 text-center text-[11px] font-medium text-muted-foreground">{message.time}</p> : null}
           <p
             className={`max-w-[78%] px-3.5 py-2 text-sm leading-5 ${
-              message.me ? "self-end rounded-2xl rounded-br-md bg-primary text-primary-foreground" : "self-start rounded-2xl rounded-bl-md bg-muted text-foreground"
+              message.me ? "self-end rounded-2xl rounded-br-md bg-imessage-sent text-imessage-sent-foreground" : "self-start rounded-2xl rounded-bl-md bg-imessage-received text-imessage-received-foreground"
             }`}
           >
             {message.text}
