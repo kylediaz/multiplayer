@@ -5,41 +5,33 @@ import type { ReactNode } from "react"
 import { cn } from "cn"
 import { rootFontSize } from "@/lib/modes/common/kit"
 import { openuiSources } from "./openui-apps"
-import { BooksApp, BriefApp, CabinsApp, GroceriesApp, HeaterApp, RecipeApp, RsvpApp, ScheduleApp, TonightApp } from "./react-apps"
-import { showcaseMeta, type ShowcaseKind } from "./data"
+import { openuiShowcase, reactShowcase } from "./data"
 
-const OpenUIPane = dynamic(() => import("./openui-pane").then((mod) => mod.OpenUIPane), {
-  ssr: false,
-  loading: () => <div className="h-full animate-pulse bg-muted" />,
-})
+const loading = () => <div className="h-full animate-pulse bg-muted" />
 
-const views = {
-  groceries: GroceriesApp,
-  books: BooksApp,
-  schedule: ScheduleApp,
-  brief: BriefApp,
-  recipe: RecipeApp,
-  tonight: TonightApp,
-  rsvp: RsvpApp,
-  cabins: CabinsApp,
-  heater: HeaterApp,
-} satisfies Record<ShowcaseKind, () => ReactNode>
+const ReactApp = dynamic(() => import("./react-apps").then((mod) => mod.ReactApp), { ssr: false, loading })
+
+const OpenUIPane = dynamic(() => import("./openui-pane").then((mod) => mod.OpenUIPane), { ssr: false, loading })
 
 export function Showcase() {
   return (
     <div className="flex h-dvh overflow-x-auto overscroll-x-contain">
       <Band label="React" className="bg-background">
-        {showcaseMeta.map((app) => {
-          const View = views[app.kind]
+        {reactShowcase.map((app) => {
+          const phones = "phones" in app ? app.phones : 1
           return (
-            <Frame key={app.kind}>
-              <View />
-            </Frame>
+            <div key={app.kind} className="flex h-full shrink-0 items-center gap-4">
+              {Array.from({ length: phones }, (_, index) => (
+                <Frame key={index}>
+                  <ReactApp kind={app.kind} />
+                </Frame>
+              ))}
+            </div>
           )
         })}
       </Band>
       <Band label="OpenUI" className="bg-muted">
-        {showcaseMeta.map((app) => (
+        {openuiShowcase.map((app) => (
           <Frame key={app.kind}>
             <OpenUIPane source={openuiSources[app.kind]} />
           </Frame>

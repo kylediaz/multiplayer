@@ -1,248 +1,182 @@
 import {
-  apartmentRows,
   apartments,
-  cabinRows,
+  cabins,
+  chili,
   dinnerFacts,
+  dinnerPhoto,
+  dinnerThread,
+  dishCrew,
+  driveStops,
   heaterMarkdown,
-  games,
-  groceryItems,
-  nights,
-  readingList,
-  recipeItems,
   recipeSteps,
-  rsvpSeed,
-  weeks,
-  type ShowcaseKind,
+  stays,
+  type OpenUIKind,
 } from "./data"
 
-function q(value: string): string {
-  return JSON.stringify(value)
+const v = (value: unknown) => JSON.stringify(value)
+
+const tonight = `root = Card([hero, header, when, facts, map, thread, actions])
+hero = ImageBlock(${v(dinnerPhoto)}, "Nopa, tonight")
+header = CardHeader("Dinner at Nopa")
+when = TextContent("7:30 PM, table for six", "large-heavy")
+facts = KVList(${v(dinnerFacts.map(([label, value]) => ({ label, value })))}, "The table")
+map = Map([nopa], false, null, 220)
+nopa = MapMarker("Nopa", 37.7749, -122.4376, null, "🍽️")
+thread = Bubbles(${v(dinnerThread)})
+actions = Buttons([directions, call], "column")
+directions = Button("Directions", @OpenUrl("https://maps.apple.com/?daddr=560+Divisadero+St,+San+Francisco"))
+call = Button("Call Nopa", @OpenUrl("tel:+14158648643"), "secondary")`
+
+const drive = `$stop = "Ikeda's"
+root = Card([header, summary, map, here, stops])
+header = CardHeader("Up to Tahoe")
+trip = ${v(driveStops)}
+miles = @Sum(trip.miles)
+summary = KVList([{label: "Distance", value: @Format(miles, "number", 0) + " mi, " + @Format(@Convert(miles, "mi", "km"), "number", 0) + " km"}, {label: "Driving", value: @Duration(@Sum(trip.minutes) * 60)}, {label: "Stops", value: @Plural(@Count(trip) - 2, "stop")}])
+map = Map(@Each(trip, "s", MapMarker(s.label, s.lat, s.lng, null, s.icon)), true, $stop, 300)
+picked = @Find(trip, "label", $stop)
+here = TextCallout("info", picked.label + ", " + picked.place, picked.note)
+stops = ListBlock(@Each(trip, "s", ListItem(s.label, s.place, null, s.miles > 0 ? s.miles + " mi" : "Start", @Set($stop, s.label))), "Tap a stop")`
+
+const cabinsProgram = `$cabin = "Pine Lodge"
+root = Card([header, compare, map, choose, photo, cost, pitch])
+header = CardHeader("Tahoe cabins")
+options = ${v(cabins)}
+compare = Table(${v(["", ...cabins.map((cabin) => cabin.name.split(" ")[0])])}, ${v([
+  ["Night", ...cabins.map((cabin) => `$${cabin.night}`)],
+  ["Beds", ...cabins.map((cabin) => cabin.beds)],
+  ["Hot tub", ...cabins.map((cabin) => (cabin.hotTub ? "Yes" : "No"))],
+  ["Lift", ...cabins.map((cabin) => `${cabin.lift} min`)],
+])})
+map = Map(@Each(options, "c", MapMarker(c.name, c.lat, c.lng, null, "🏡")), false, $cabin, 240)
+choose = Buttons(@Each(options, "c", Button(c.name, @Set($cabin, c.name), $cabin == c.name ? "primary" : "secondary", "normal", "small")))
+picked = @Find(options, "name", $cabin)
+photo = ImageBlock(picked.photo, picked.name + ", " + picked.where)
+cost = KVList([{label: "Three nights", value: @Format(picked.night * 3, "currency", 0)}, {label: "Split six ways", value: @Format(picked.night * 3 / 6, "currency", 0)}, {label: "Beds for six", value: picked.beds >= 6 ? "Enough" : "Short " + (6 - picked.beds)}], picked.name)
+pitch = TextContent(picked.pitch, "small")`
+
+function apartmentTab(place: (typeof apartments)[number]): string {
+  const id = place.id
+  const [first, ...rest] = place.photos
+  const media = first
+    ? [`${id}Hero = ImageBlock(${v(first)}, ${v(place.heading)})`, ...(rest.length ? [`${id}Grid = PhotoGrid(${v(rest.map((src) => ({ src })))})`] : [])]
+    : [`${id}Hero = TextCallout("warning", "No photos", "The listing has none. Ask the agent before you go.")`]
+  const parts = [`${id}Hero`, ...(rest.length ? [`${id}Grid`] : []), `${id}Facts`, `${id}Body`, ...(id === "morton" ? [`${id}Staged`] : []), `${id}Open`]
+  return [
+    `${id} = TabItem(${v(place.name.split(" ")[0])}, [${parts.join(", ")}])`,
+    ...media,
+    `${id}Facts = KVList([{label: "Rent", value: @Format(${place.rent}, "currency", 0) + " a month"}, {label: "A year", value: @Format(${place.rent} * 12, "currency", 0)}, {label: "Fee", value: ${v(place.fee)}}])`,
+    `${id}Body = Markdown(${v(place.body)})`,
+    ...(id === "morton" ? [`${id}Staged = TextCallout("warning", "Staged photos", "These are of another unit in the building.")`] : []),
+    `${id}Open = Buttons([Button("Open the listing", @OpenUrl(${v(place.href)}), "secondary")])`,
+  ].join("\n")
 }
 
-function refs(names: readonly string[]): string {
-  return `[${names.join(", ")}]`
-}
+const brief = [
+  `root = Card([header, pick, compare, tabs, before])`,
+  `header = CardHeader("Three West Village one-bedrooms")`,
+  `pick = TextCallout("success", "Leroy Street is the pick", "The only one with outdoor space and a fireplace, and the laundry is in the unit.")`,
+  `compare = Table(${v(["", ...apartments.map((place) => place.name.split(" ")[0])])}, ${v([
+    ["Rent", ...apartments.map((place) => `$${place.rent.toLocaleString("en-US")}`)],
+    ["Outdoor", ...apartments.map((place) => (place.outdoor === "No" ? "None" : "Balcony"))],
+    ["Size", ...apartments.map((place) => (place.size === "Not listed" ? "Not listed" : place.size))],
+    ["Photos", ...apartments.map((place) => (place.photos.length === 0 ? "None" : place.id === "morton" ? "Staged" : "Real"))],
+  ])})`,
+  `tabs = Tabs([${apartments.map((place) => place.id).join(", ")}])`,
+  ...apartments.map(apartmentTab),
+  `before = TextCallout("neutral", "Before you go", "None of the three lists a floor plan, so ask each agent for one. Confirm availability before applying.")`,
+].join("\n")
 
-function call(name: string, component: string, args: readonly string[] = []): string {
-  return `${name} = ${component}(${args.join(", ")})`
-}
+const recipe = `$serves = 6
+$metric = false
+root = Card([header, pot, adjust, units, shopping, method, rule])
+header = CardHeader("Dad's chili")
+pot = KVList([{label: "Serves", value: @Plural($serves, "person", "people")}, {label: "Time", value: "45 min"}, {label: "Pot", value: $serves > 8 ? "The big one" : "The usual"}], "The pot")
+adjust = Buttons([Button("Fewer", @Set($serves, @Clamp($serves - 2, 2, 16)), "secondary"), Button("More", @Set($serves, @Clamp($serves + 2, 2, 16)), "secondary")])
+units = Buttons([Button("US", @Set($metric, false), $metric ? "tertiary" : "primary", "normal", "small"), Button("Metric", @Set($metric, true), $metric ? "primary" : "tertiary", "normal", "small")])
+pantry = ${v(chili)}
+scale = $serves / 6
+shopping = ListBlock(@Each(pantry, "i", ListItem(i.name, null, null, $metric && i.metric != "" ? @Format(@Convert(i.amount * scale, i.unit, i.metric), "number", i.metricPlaces) + " " + i.metric : @Trim(@Format(i.amount * scale, "number", i.places) + " " + i.unit))), "Shopping for " + $serves)
+steps = ${v(recipeSteps)}
+method = ListBlock(@Each(@Range(0, @Count(steps)), "n", ListItem(steps[n], null, null, @Pad(n + 1, 2))), "Method")
+rule = TextCallout("info", "Dad's one rule", "Chili is better the second day, so make it the day before.")`
 
-function program(lines: string[]): string {
-  return lines.join("\n")
-}
+const split = `$mode = "nights"
+root = Card([header, bill, choose, chart, table, note])
+header = CardHeader("Splitting Pine Lodge")
+guests = ${v(stays)}
+total = 640 * 3 + 180
+bill = KVList([{label: "Three nights", value: @Format(640 * 3, "currency", 0)}, {label: "Cleaning", value: @Format(180, "currency", 0)}, {label: "Total", value: @Format(total, "currency", 0)}], "The bill")
+choose = Buttons([Button("By nights", @Set($mode, "nights"), $mode == "nights" ? "primary" : "secondary", "normal", "small"), Button("Evenly", @Set($mode, "even"), $mode == "even" ? "primary" : "secondary", "normal", "small")])
+shares = $mode == "even" ? @Allocate(total, [1, 1, 1, 1]) : @Allocate(total, guests.nights)
+top = @Max(shares)
+chart = Svg(@Each(@Range(0, @Count(guests)), "i", G([SvgText(guests[i].name, 0, i * 40 + 22, 14, "ink", "start", "medium"), Rect(64, i * 40 + 6, shares[i] / top * 176, 24, "info", null, null, null, 6), SvgText(@Format(shares[i], "currency", 0), 64 + shares[i] / top * 176 + 8, i * 40 + 23, 13, "muted")])), "0 0 320 160")
+table = Table(["", "Nights", "Owes"], @Each(@Range(0, @Count(guests)), "i", [guests[i].name, guests[i].nights, @Format(shares[i], "currency", 2)]))
+note = TextContent($mode == "nights" ? "Each night costs the same per person, cleaning included." : "Everyone pays the same, however long they stay.", "small")`
 
-function listItem(name: string, title: string, subtitle?: string, trailing?: string): string {
-  const args = [q(title)]
-  if (subtitle !== undefined || trailing !== undefined) args.push(subtitle === undefined ? "null" : q(subtitle))
-  if (trailing !== undefined) args.push("null", q(trailing))
-  return call(name, "ListItem", args)
-}
+const T0 = 62
+const scale = 280 / 12
+const tx = (temp: number) => Math.round(20 + (temp - T0) * scale)
 
-function kv(name: string, header: string, rows: readonly (readonly [string, string])[]): string {
-  const body = rows.map(([label, value]) => `{ label: ${q(label)}, value: ${q(value)} }`).join(", ")
-  return call(name, "KVList", [`[${body}]`, q(header)])
-}
+const heater = `$temp = 68
+$heating = false
+root = Card([header, lede, sim, controls, status, body])
+header = CardHeader("The cabin heater")
+lede = TextContent("Nudge the room and watch the boiler hold its band.", "small")
+sim = Svg([band, track, ${[64, 66, 68, 70, 72].map((t) => `tick${t}`).join(", ")}, onLabel, offLabel, dot, reading], "0 0 320 110")
+band = Rect(${tx(67)}, 34, ${tx(69) - tx(67)}, 42, "info", null, null, 0.12, 8)
+track = Line(20, 55, 300, 55, "muted", 2)
+${[64, 66, 68, 70, 72].map((t) => `tick${t} = SvgText("${t}°", ${tx(t)}, 98, 11, "muted", "middle")`).join("\n")}
+onLabel = SvgText("on", ${tx(67)}, 28, 10, "muted", "middle")
+offLabel = SvgText("off", ${tx(69)}, 28, 10, "muted", "middle")
+x = 20 + ($temp - ${T0}) * ${scale.toFixed(4)}
+dot = Circle(x, 55, 9, $heating ? "danger" : "ink")
+reading = SvgText($temp + "°", x, 81, 12, "ink", "middle", "semibold")
+controls = Buttons([colder, warmer])
+colder = Button("Colder", Action([@Set($heating, $temp - 1 < 67 ? true : $temp - 1 > 69 ? false : $heating), @Set($temp, @Clamp($temp - 1, 62, 74))]), "secondary")
+warmer = Button("Warmer", Action([@Set($heating, $temp + 1 < 67 ? true : $temp + 1 > 69 ? false : $heating), @Set($temp, @Clamp($temp + 1, 62, 74))]), "secondary")
+status = $heating ? TextCallout("warning", "Boiler on", "It stays on until the room passes 69°F.") : TextCallout("neutral", "Boiler off", "It stays off until the room drops below 67°F.")
+body = Markdown(${v(heaterMarkdown)})`
 
-function groceries(): string {
-  const open = groceryItems.filter((item) => !item.done)
-  const done = groceryItems.filter((item) => item.done)
-  const lines: string[] = []
-  const openNames = open.map((item, index) => {
-    const name = `open${index}`
-    lines.push(listItem(name, item.name, undefined, `$${item.price}`))
-    return name
-  })
-  const doneNames = done.map((item, index) => {
-    const name = `done${index}`
-    lines.push(listItem(name, item.name, undefined, `$${item.price}`))
-    return name
-  })
-  lines.push(
-    call("root", "Card", [refs(["header", "openList", "doneList", "send"])]),
-    call("header", "CardHeader", [q("Tahoe groceries")]),
-    call("openList", "ListBlock", [refs(openNames), q("To get")]),
-    call("doneList", "ListBlock", [refs(doneNames), q("Done")]),
-    call("send", "Buttons", [refs(["sendButton"])]),
-    call("sendButton", "Button", [q("Text me the list")]),
-  )
-  return program(lines)
-}
+const wheelHtml = `<style>
+body{display:flex;flex-direction:column;align-items:center;gap:14px;padding:12px 0 16px;font-family:Inter,system-ui,sans-serif}
+canvas{width:280px;height:280px}
+button{font:600 15px Inter,system-ui,sans-serif;width:280px;padding:12px;border:0;border-radius:16px;background:CanvasText;color:Canvas}
+p{margin:0;font-size:15px;min-height:22px}
+</style>
+<canvas id="w" width="560" height="560"></canvas>
+<p id="r">Tap spin.</p>
+<button id="b">Spin</button>
+<script>
+const names=${JSON.stringify(dishCrew)};
+const c=document.getElementById("w"),x=c.getContext("2d"),r=document.getElementById("r"),b=document.getElementById("b");
+const ink=getComputedStyle(document.body).color;
+const seg=Math.PI*2/names.length;let angle=0,spinning=false;
+function draw(){x.clearRect(0,0,560,560);x.save();x.translate(280,280);x.rotate(angle);
+names.forEach((n,i)=>{x.beginPath();x.moveTo(0,0);x.arc(0,0,250,i*seg,(i+1)*seg);x.closePath();x.fillStyle=ink;x.globalAlpha=i%2?0.1:0.2;x.fill();x.globalAlpha=1;
+x.save();x.rotate(i*seg+seg/2);x.fillStyle=ink;x.font="600 30px Inter,system-ui,sans-serif";x.textAlign="right";x.textBaseline="middle";x.fillText(n,204,0);x.restore()});
+x.restore();x.fillStyle=ink;x.beginPath();x.moveTo(264,4);x.lineTo(296,4);x.lineTo(280,40);x.closePath();x.fill();
+x.beginPath();x.arc(280,280,22,0,Math.PI*2);x.fill()}
+function winner(){const a=((-Math.PI/2-angle)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);return names[Math.floor(a/seg)]}
+b.onclick=()=>{if(spinning)return;spinning=true;r.textContent="…";const start=angle,turn=Math.PI*2*(4+Math.random()*2),t0=performance.now(),d=3200;
+function tick(t){const k=Math.min(1,(t-t0)/d);angle=start+turn*(1-Math.pow(1-k,3));draw();if(k<1)requestAnimationFrame(tick);else{spinning=false;r.textContent=winner()+" does the dishes."}}
+requestAnimationFrame(tick)};
+draw();
+</script>`
 
-function books(): string {
-  const lines: string[] = []
-  const names = readingList.map((book, index) => {
-    const name = `book${index}`
-    lines.push(listItem(name, book.title, book.author, book.read ? "Read" : undefined))
-    return name
-  })
-  lines.push(
-    call("root", "Card", [refs(["header", "list"])]),
-    call("header", "CardHeader", [q("Books to read")]),
-    call("list", "ListBlock", [refs(names), q("The list")]),
-  )
-  return program(lines)
-}
+const dishes = `root = Card([header, lede, wheel, rule])
+header = CardHeader("Who does the dishes")
+lede = TextContent("Spin it once. No rerolls.", "small")
+wheel = HtmlView(${v(wheelHtml)}, null, "Dish wheel")
+rule = TextCallout("neutral", "House rule", "Whoever cooked is off the wheel tonight.")`
 
-function schedule(): string {
-  const lines: string[] = []
-  const weekNames = weeks.map((week) => {
-    const name = `week${week}`
-    const weekGames = games.filter((game) => game.week === week)
-    const days = [...new Set(weekGames.map((game) => game.day))]
-    const dayNames = days.map((day, dayIndex) => {
-      const dayName = `${name}Day${dayIndex}`
-      const gameNames = weekGames
-        .filter((game) => game.day === day)
-        .map((game, gameIndex) => {
-          const gameName = `${dayName}Game${gameIndex}`
-          lines.push(listItem(gameName, `${game.away} at ${game.home}`, game.time, game.tv))
-          return gameName
-        })
-      lines.push(call(dayName, "ListBlock", [refs(gameNames), q(day)]))
-      return dayName
-    })
-    lines.push(call(name, "TabItem", [q(`Week ${week}`), refs(dayNames)]))
-    return name
-  })
-  lines.push(
-    call("root", "Card", [refs(["header", "tabs"])]),
-    call("header", "CardHeader", [q("2026 NFL Schedule")]),
-    call("tabs", "Tabs", [refs(weekNames)]),
-  )
-  return program(lines)
-}
-
-function brief(): string {
-  const lines: string[] = []
-  const compareNames = apartments.map((place, index) => {
-    const name = `compare${index}`
-    const outdoor = apartmentRows[2]?.[index + 1] ?? ""
-    lines.push(listItem(name, place.heading, outdoor === "No" ? "No outdoor space" : outdoor, place.facts[0]?.value))
-    return name
-  })
-  const placeNames = apartments.map((place) => {
-    const name = place.id
-    lines.push(call(`${name}Title`, "TextContent", [q(place.heading), q("large-heavy")]))
-    lines.push(kv(`${name}Facts`, place.name, place.facts.map((fact) => [fact.label, fact.value])))
-    lines.push(call(`${name}Body`, "TextContent", [q(place.body)]))
-    return name
-  })
-  const sections = placeNames.flatMap((name) => [`${name}Title`, `${name}Facts`, `${name}Body`])
-  lines.push(
-    call("root", "Card", [refs(["header", "lede", "compare", ...sections, "before"])]),
-    call("header", "CardHeader", [q("Three West Village one-bedrooms")]),
-    call("lede", "TextContent", [q("Leroy Street is the pick: the only one with outdoor space and a fireplace, and the laundry is in the unit. Morton is the cheapest at $5,200, but its photos are of another unit, staged.")]),
-    call("compare", "ListBlock", [refs(compareNames), q("Side by side")]),
-    call("before", "TextCallout", [q("neutral"), q("Before you go"), q("None of the three lists a floor plan, so ask each agent for one. Confirm availability before applying.")]),
-  )
-  return program(lines)
-}
-
-function recipe(): string {
-  const lines: string[] = []
-  const itemNames = recipeItems.map((item, index) => {
-    const name = `item${index}`
-    lines.push(listItem(name, item.name, undefined, item.done ? "Got" : undefined))
-    return name
-  })
-  const stepNames = recipeSteps.map((step, index) => {
-    const name = `step${index}`
-    lines.push(listItem(name, step, undefined, String(index + 1).padStart(2, "0")))
-    return name
-  })
-  lines.push(
-    call("root", "Card", [refs(["header", "facts", "lede", "buy", "method", "rule"])]),
-    call("header", "CardHeader", [q("Dad's chili")]),
-    kv("facts", "The pot", [
-      ["Serves", "6"],
-      ["Time", "45 min"],
-      ["Heat", "Medium"],
-    ]),
-    call("lede", "TextContent", [q("The Sunday pot, the way Dad makes it: brown the beef hard, let the beans go in late, and give it the full simmer.")]),
-    call("buy", "ListBlock", [refs(itemNames), q("What to buy")]),
-    call("method", "ListBlock", [refs(stepNames), q("Method")]),
-    call("rule", "TextCallout", [q("info"), q("Dad's one rule"), q("Chili is better the second day, so make it the day before.")]),
-  )
-  return program(lines)
-}
-
-function tonight(): string {
-  const lines: string[] = [
-    call("nopa", "MapMarker", [q("Nopa"), "37.7749", "-122.4376"]),
-    call("root", "Card", [refs(["header", "when", "facts", "map", "foot"])]),
-    call("header", "CardHeader", [q("Dinner at Nopa")]),
-    call("when", "TextContent", [q("7:30 PM, table for six"), q("large-heavy")]),
-    kv("facts", "The table", dinnerFacts),
-    call("map", "Map", [refs(["nopa"])]),
-    call("foot", "TextContent", [q("Text Caddy to move it."), q("small")]),
-  ]
-  return program(lines)
-}
-
-function standing(response: (typeof rsvpSeed)[number]): string {
-  if (!response.coming) return "Can't make it"
-  return [`Coming`, response.nights, response.kids ? "with kids" : ""].filter(Boolean).join(", ")
-}
-
-function rsvp(): string {
-  const lines: string[] = []
-  const responseNames = rsvpSeed.map((response, index) => {
-    const name = `who${index}`
-    lines.push(listItem(name, response.name, standing(response)))
-    return name
-  })
-  const nightNames = nights.map((night, index) => {
-    const name = `night${index}`
-    lines.push(call(name, "Toggle", [q(night), "false"]))
-    return name
-  })
-  lines.push(
-    call("root", "Card", [refs(["header", "intro", "soFar", "nights", "note"])]),
-    call("header", "CardHeader", [q("Cabin weekend")]),
-    call("intro", "TextContent", [q("Two quick questions so we can book."), q("small")]),
-    call("soFar", "ListBlock", [refs(responseNames), q("So far")]),
-    call("nights", "ListBlock", [refs(nightNames), q("Which nights work")]),
-    call("note", "TextCallout", [q("neutral"), q("Bring the kids?"), q("Say so when you reply. Allergies and arrival time too.")]),
-  )
-  return program(lines)
-}
-
-function cabins(): string {
-  const lines: string[] = []
-  const names = ["Pine Lodge", "Creekside", "Ridge House"].map((name, index) => {
-    const id = `cabin${index}`
-    const details = cabinRows.map((row) => `${row[0]} ${row[index + 1]}`).join(" · ")
-    lines.push(listItem(id, name, details, cabinRows[1]?.[index + 1]))
-    return id
-  })
-  lines.push(
-    call("pine", "MapMarker", [q("Pine Lodge"), "39.242", "-120.028"]),
-    call("creek", "MapMarker", [q("Creekside"), "39.328", "-120.183"]),
-    call("ridge", "MapMarker", [q("Ridge House"), "38.940", "-119.960"]),
-    call("root", "Card", [refs(["header", "list", "map"])]),
-    call("header", "CardHeader", [q("Tahoe cabins")]),
-    call("list", "ListBlock", [refs(names), q("The three")]),
-    call("map", "Map", [refs(["pine", "creek", "ridge"])]),
-  )
-  return program(lines)
-}
-
-function heaterNote(): string {
-  return program([
-    call("root", "Card", [refs(["header", "body"])]),
-    call("header", "CardHeader", [q("The cabin heater")]),
-    call("body", "Markdown", [q(heaterMarkdown)]),
-  ])
-}
-
-export const openuiSources: Record<ShowcaseKind, string> = {
-  groceries: groceries(),
-  books: books(),
-  schedule: schedule(),
-  brief: brief(),
-  recipe: recipe(),
-  tonight: tonight(),
-  rsvp: rsvp(),
-  cabins: cabins(),
-  heater: heaterNote(),
+export const openuiSources: Record<OpenUIKind, string> = {
+  tonight,
+  drive,
+  cabins: cabinsProgram,
+  brief,
+  recipe,
+  split,
+  heater,
+  dishes,
 }

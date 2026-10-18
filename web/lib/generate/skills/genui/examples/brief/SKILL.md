@@ -1,39 +1,36 @@
 ---
 name: brief
-description: A document that compares a few options and names a pick. Load for a short researched comparison that includes the reasoning.
+description: A researched recommendation with the evidence behind it. Load for summarizing listings, reviews, research, or search results into a pick.
 ---
 
 # Brief
 
-A document. The first lines name the pick. Then one row per option. Then each option: a heading, its facts, a short paragraph. A callout for the caveat. No buttons. A fact that is not in the ask does not appear. schema.keys is empty. When the ask is only the grid, use the cabins example. Copy this page.
+The verdict comes first, as a success callout that says which one and why in one line. Then a short table to compare, then a tab per option with its photos, numbers, description, and a link to the source. Say what is missing or suspicious with a warning callout where it applies, and end with what to do next. Only use image URLs that came from the source; with none, say so instead.
 
-```tsx
-import { Card, CardHeader, KVList, ListBlock, ListItem, TextCallout, TextContent } from "ui"
+## OpenUI
 
-const places = [
-  { name: "Leroy Street", fact: "Private balcony", rent: "$5,395", rows: [{ label: "Rent", value: "$5,395" }, { label: "Fee", value: "None" }, { label: "Laundry", value: "In unit" }], body: "The only one with outdoor space and a fireplace." },
-  { name: "Morton Street", fact: "No outdoor space", rent: "$5,200", rows: [{ label: "Rent", value: "$5,200" }, { label: "Size", value: "523 sq ft" }], body: "The cheapest. Its photos are of another unit, staged." },
-]
-
-export default function App() {
-  return (
-    <Card>
-      <CardHeader title="Three West Village one-bedrooms" />
-      <TextContent text="Leroy Street is the pick: the only one with outdoor space. Morton is cheaper, and its photos are staged." />
-      <ListBlock header="Side by side">
-        {places.map((place) => <ListItem key={place.name} title={place.name} subtitle={place.fact} trailing={place.rent} />)}
-      </ListBlock>
-      {places.map((place) => (
-        <section key={place.name} className="contents">
-          <TextContent text={place.name} style="large-heavy" />
-          <KVList rows={place.rows} />
-          <TextContent text={place.body} />
-        </section>
-      ))}
-      <TextCallout variant="neutral" title="Before you go" description="None of them lists a floor plan. Confirm availability before applying." />
-    </Card>
-  )
-}
+```openui
+root = Card([header, pick, compare, tabs, before])
+header = CardHeader("Three West Village one-bedrooms")
+pick = TextCallout("success", "Leroy Street is the pick", "The only one with outdoor space and a fireplace, and the laundry is in the unit.")
+compare = Table(["","Leroy","Barrow","Morton"], [["Rent","$5,395","$5,495","$5,200"],["Outdoor","Balcony","None","None"],["Size","Not listed","Not listed","523 sq ft"],["Photos","Real","None","Staged"]])
+tabs = Tabs([leroy, barrow, morton])
+leroy = TabItem("Leroy", [leroyHero, leroyGrid, leroyFacts, leroyBody, leroyOpen])
+leroyHero = ImageBlock("https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=900&q=70&auto=format&fit=crop", "Leroy Street #1J")
+leroyGrid = PhotoGrid([{"src":"https://images.unsplash.com/photo-1484154218962-a197022b5858?w=900&q=70&auto=format&fit=crop"},{"src":"https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=900&q=70&auto=format&fit=crop"}])
+leroyFacts = KVList([{label: "Rent", value: @Format(5395, "currency", 0) + " a month"}, {label: "A year", value: @Format(5395 * 12, "currency", 0)}, {label: "Fee", value: "None"}])
+leroyBody = Markdown("Renovated, with a private balcony, a fireplace, and a washer and dryer in the unit. Dishwasher, hardwood floors, high ceilings. Cats and dogs allowed.")
+leroyOpen = Buttons([Button("Open the listing", @OpenUrl("https://www.renthop.com/listings/leroy-street/1-j/76926267"), "secondary")])
+barrow = TabItem("Barrow", [barrowHero, barrowFacts, barrowBody, barrowOpen])
+barrowHero = TextCallout("warning", "No photos", "The listing has none. Ask the agent before you go.")
+barrowFacts = KVList([{label: "Rent", value: @Format(5495, "currency", 0) + " a month"}, {label: "A year", value: @Format(5495 * 12, "currency", 0)}, {label: "Fee", value: "None"}])
+barrowBody = Markdown("Renovated, with exposed brick, in-unit laundry, a dishwasher, and stainless appliances. Near the A, C, E, B, D, F, and M.")
+barrowOpen = Buttons([Button("Open the listing", @OpenUrl("https://www.renthop.com/listings/barrow-street/1w/77217078"), "secondary")])
+morton = TabItem("Morton", [mortonHero, mortonFacts, mortonBody, mortonStaged, mortonOpen])
+mortonHero = ImageBlock("https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=900&q=70&auto=format&fit=crop", "Morton Street")
+mortonFacts = KVList([{label: "Rent", value: @Format(5200, "currency", 0) + " a month"}, {label: "A year", value: @Format(5200 * 12, "currency", 0)}, {label: "Fee", value: "None"}])
+mortonBody = Markdown("The cheapest of the three, with a washer and dryer in the unit, a marble bath, and a virtual doorman.")
+mortonStaged = TextCallout("warning", "Staged photos", "These are of another unit in the building.")
+mortonOpen = Buttons([Button("Open the listing", @OpenUrl("https://www.renthop.com/listings/morton-street/a/73435047"), "secondary")])
+before = TextCallout("neutral", "Before you go", "None of the three lists a floor plan, so ask each agent for one. Confirm availability before applying.")
 ```
-
-OpenUI is the same screen, with the sentences and the rows written out.
