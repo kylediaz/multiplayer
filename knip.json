@@ -9,6 +9,7 @@
   ],
   "ignoreIssues": {
     "web/lib/modes/common/kit/**": ["exports", "types", "duplicates"],
+    "web/lib/modes/openui/iui/**": ["exports", "types", "duplicates"],
     "web/components/ui/**": ["exports", "types", "duplicates"]
   }
 }

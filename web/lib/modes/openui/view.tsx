@@ -2,7 +2,9 @@
 
 import { Renderer } from "@openuidev/react-lang"
 import type { DataplaneDocument } from "@/lib/dataplane"
-import { kitLibrary } from "./library"
+import { runLibraryAction } from "./iui/actions"
+import { library } from "./library"
+import "./styles"
 
 type OpenUIViewProps = {
   document: DataplaneDocument
@@ -14,7 +16,7 @@ export function OpenUIView({ source }: OpenUIViewProps) {
   return (
     <div className="h-full overflow-auto bg-background text-foreground">
       <div className="p-4">
-        <Renderer response={source} library={kitLibrary} isStreaming={false} />
+        <Renderer response={source} library={library} isStreaming={false} onAction={(event) => void runLibraryAction(event)} />
       </div>
     </div>
   )

@@ -1,0 +1,5 @@
+import "katex/dist/katex.min.css"
+import "maplibre-gl/dist/maplibre-gl.css"
+import "./iui/components/theme.css"
+import "./iui/components/components.css"
+import "./iui/components/map/map.css"

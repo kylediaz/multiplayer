@@ -1,16 +1,15 @@
 import type { GenerationMode } from "@shared/lang"
-import { kitLibrary } from "../modes/openui/library"
+import { library } from "../modes/openui/library"
 
 let openuiPrompt: string | undefined
 
 function openuiComponentPrompt(): string {
-  openuiPrompt ??= kitLibrary.prompt({
+  openuiPrompt ??= library.prompt({
     preamble:
-      "The submitted source is an openui-lang program. It uses the shared components, and the root is Stack. Do not write React, and do not wrap the program in markdown fences.",
+      "The submitted source is an openui-lang program. It uses this component library, and the root is Col. Do not write React, and do not wrap the program in markdown fences.",
     additionalRules: [
-      "The page is one Stack. The title is an H1.",
-      "Do not put a Card inside a Card.",
-      "Do not wrap the page in a Card.",
+      "The page is one Col. The title is a Title.",
+      "An input's first argument is its value, usually a $variable that other statements read.",
     ],
   })
   return openuiPrompt
@@ -129,7 +128,7 @@ Prefer built-in components (\`Card\`, \`Button\`, \`Text\`, etc.) over raw class
 
 The design guidance describes what to avoid. It is not a request to add sections, cards, or controls. Ship the smallest layout that does what was asked.`
 
-const OPENUI = `You build an app with the shared components. Call submit with the finished app. If submit returns problems, fix the program and call submit again. Do not reply with the source as text.
+const OPENUI = `You build an app with the OpenUI component library. Call submit with the finished app. If submit returns problems, fix the program and call submit again. Do not reply with the source as text.
 {
   "title": string,
   "source": "<openui-lang program>"
@@ -138,7 +137,7 @@ The program does not share state.`
 
 const DECIDE = `You build an app. Choose React or OpenUI, then call submit with lang set to that choice. If submit returns problems, fix the app and call submit again. Do not reply with the source as text.
 
-Set lang to "openui" when the shared components can express the app. source is an openui-lang program and schema is { "keys": {} }.
+Set lang to "openui" when the OpenUI component library can express the app. source is an openui-lang program and schema is { "keys": {} }.
 Set lang to "react" when the app needs shared collaborative state, or behavior those components cannot express. source is one TSX file, and schema lists every sync id.
 
 When lang is "react", follow this contract.

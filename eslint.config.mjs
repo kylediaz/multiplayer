@@ -11,6 +11,15 @@ const eslintConfig = defineConfig([
       "@next/next/no-html-link-for-pages": ["error", "web/app"],
     },
   },
+  {
+    files: ["web/lib/modes/openui/iui/**/*.{ts,tsx}"],
+    rules: {
+      "react-hooks/rules-of-hooks": "off",
+      "react-hooks/exhaustive-deps": "off",
+      "react-hooks/immutability": "off",
+      "@next/next/no-img-element": "off",
+    },
+  },
   globalIgnores([
     // Default ignores of eslint-config-next:
     ".next/**",
