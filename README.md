@@ -8,6 +8,12 @@ Describe an app. Generate it as React, as OpenUI, or let the model decide, then 
 
 The landing page is a prompt. React and OpenUI are explicit, and Decide lets the agent choose. Create document runs that agent. It submits a title, a schema, and source. The shell compiles the source and opens the document.
 
+## Showcase
+
+![Example apps in React and OpenUI](docs/showcase.png)
+
+The showcase is a row of example apps in phone frames. React is on the left, OpenUI on the right. These are the same kinds of views the landing prompt generates, already compiled and laid out side by side.
+
 ## A generated view
 
 ![A histogram of the letters in its own title](docs/example.png)
