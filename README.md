@@ -14,12 +14,6 @@ The landing page is a prompt. React and OpenUI are explicit, and Decide lets the
 
 The showcase is a row of example apps in phone frames. React is on the left, OpenUI on the right. These are the same kinds of views the landing prompt generates, already compiled and laid out side by side.
 
-## A generated view
-
-![A histogram of the letters in its own title](docs/example.png)
-
-This one was asked to count the letters in its own sentence. The chart is the generated view, inside an iframe under the document header. Live means the shell is connected. This view stores nothing: its schema has no keys, and the bars are computed from the sentence.
-
 ## How a document behaves
 
 React source is one component. It may import React, `sync`, and `ui`. `ui` is the canvas kit the view is styled with: layout, type, inputs, charts, and a todo list. OpenUI source is a Cupertino program and does not share state. The shell bundles either one and publishes it as the document's view. Both open in a phone frame beside the source.
