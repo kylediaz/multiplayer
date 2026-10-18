@@ -63,7 +63,7 @@ export default function App() {
 
   return (
     <Card>
-      <CardHeader title="Tahoe kitty" />
+      <CardHeader title="Kitty" />
       {spends.length === 0 ? (
         <TextContent text="Nothing spent yet." style="small" />
       ) : (

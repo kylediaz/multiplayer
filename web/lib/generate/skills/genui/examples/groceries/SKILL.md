@@ -5,7 +5,7 @@ description: A shared list people add to and check off, with an amount on each r
 
 # Groceries
 
-A list the group fills and checks off together. The summary up top answers "how much is left". Open rows and checked rows are separate groups, and the price is the toggle's subtitle. Adding is two fields on their own lines, then a full-width Add bar. Change the title and the fields to the ask.
+A list the group fills and checks off together. The summary up top answers "how much is left". Open rows and checked rows are separate groups, and the price is the toggle's subtitle. Adding is two fields on their own lines, then a full-width Add bar. Change the fields to the ask.
 
 ## React
 
@@ -39,7 +39,7 @@ export default function App() {
 
   return (
     <Card>
-      <CardHeader title="Tahoe groceries" />
+      <CardHeader title="Groceries" />
       {items.length > 0 && (
         <KVList
           rows={[

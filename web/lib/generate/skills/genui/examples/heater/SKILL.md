@@ -57,16 +57,10 @@ function simulate(set: number, gap: number) {
 
 function Range({ label, value, unit, min, max, step: by, onChange }: { label: string; value: number; unit: string; min: number; max: number; step: number; onChange: (value: number) => void }) {
   return (
-    <label className="flex flex-col gap-2 px-0.5">
-      <span className="flex items-baseline justify-between text-sm">
-        <span className="text-muted-foreground">{label}</span>
-        <span className="font-medium text-foreground tabular-nums">
-          {value}
-          {unit}
-        </span>
-      </span>
-      <input type="range" className="w-full accent-primary" min={min} max={max} step={by} value={value} onChange={(event) => onChange(Number(event.target.value))} />
-    </label>
+    <>
+      <TextContent text={`${label}: ${value}${unit}`} />
+      <input type="range" aria-label={label} className="w-full accent-primary" min={min} max={max} step={by} value={value} onChange={(event) => onChange(Number(event.target.value))} />
+    </>
   )
 }
 
@@ -83,7 +77,7 @@ export default function App() {
   return (
     <Card>
       <CardHeader title="The cabin heater" />
-      <TextContent text="Slide the set point and the gap. The boiler only starts below the band and only stops above it." style="small" />
+      <TextContent text="The boiler only starts below the band and only stops above it." style="small" />
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full overflow-visible rounded-2xl bg-muted">
         <rect x={0} y={y(set + gap / 2)} width={width} height={y(set - gap / 2) - y(set + gap / 2)} className="fill-foreground/10" />
         <polyline points={line} className="fill-none stroke-primary" strokeWidth={2} strokeLinejoin="round" />
@@ -126,7 +120,7 @@ $temp = 68
 $heating = false
 root = Card([header, lede, sim, controls, status, body])
 header = CardHeader("The cabin heater")
-lede = TextContent("Nudge the room and watch the boiler hold its band.", "small")
+lede = TextContent("The boiler only starts below the band and only stops above it.", "small")
 sim = Svg([band, track, tick64, tick66, tick68, tick70, tick72, onLabel, offLabel, dot, reading], "0 0 320 110")
 band = Rect(137, 34, 46, 42, "info", null, null, 0.12, 8)
 track = Line(20, 55, 300, 55, "muted", 2)

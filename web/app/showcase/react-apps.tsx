@@ -43,7 +43,7 @@ function GroceriesApp() {
 
   return (
     <Card>
-      <CardHeader title="Tahoe groceries" />
+      <CardHeader title="Groceries" />
       <KVList
         rows={[
           { label: "Left to buy", value: money(left) },
@@ -254,7 +254,6 @@ function RsvpApp() {
         <TextCallout variant="success" title={`Thanks, ${sent}`} description="Your reply is in. Everyone sees it now." />
       ) : (
         <>
-          <TextContent text="Your reply" style="large-heavy" />
           <input className={field} value={name} placeholder="Your name" onChange={(event) => setName(event.target.value)} />
           <ListBlock header="Which nights work">
             {nights.map((night) => (
@@ -313,7 +312,7 @@ function RecipeApp() {
       ) : left > 0 ? (
         <>
           <div className="rounded-2xl bg-muted px-4 pt-5 pb-4 text-center">
-            <p className="font-mono text-5xl font-light text-foreground tabular-nums">{clock(left)}</p>
+            <p className="text-5xl font-light text-foreground tabular-nums">{clock(left)}</p>
             <p className="mt-1.5 text-[13px] text-muted-foreground">{left > 10 * 60 * 1000 ? `Beans in at 10:00` : "Beans in now"}</p>
             <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-background">
               <div className="h-full rounded-full bg-primary" style={{ width: `${(1 - left / SIMMER) * 100}%` }} />
@@ -387,7 +386,7 @@ function KittyApp() {
 
   return (
     <Card>
-      <CardHeader title="Tahoe kitty" />
+      <CardHeader title="Kitty" />
       <KVList
         rows={[
           { label: "Spent", value: money(total) },
@@ -409,13 +408,18 @@ function KittyApp() {
       </ListBlock>
       <input className={field} value={what} placeholder="What was it" onChange={(event) => setWhat(event.target.value)} />
       <input className={field} value={amount} inputMode="decimal" placeholder="How much" onChange={(event) => setAmount(event.target.value)} />
-      <select className={field} value={payer} onChange={(event) => setPayer(event.target.value)}>
-        {people.map((name) => (
-          <option key={name} value={name}>
-            Paid by {name}
-          </option>
-        ))}
-      </select>
+      <div className="relative">
+        <select className={`${field} appearance-none pr-10`} value={payer} onChange={(event) => setPayer(event.target.value)}>
+          {people.map((name) => (
+            <option key={name} value={name}>
+              Paid by {name}
+            </option>
+          ))}
+        </select>
+        <svg viewBox="0 0 24 24" aria-hidden className="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 fill-none stroke-muted-foreground stroke-2 [stroke-linecap:round] [stroke-linejoin:round]">
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </div>
       <Buttons>
         <Button label="Add" onClick={add} />
       </Buttons>
@@ -456,16 +460,10 @@ function simulate(set: number, gap: number) {
 
 function Range({ label, value, unit, min, max, step: stepBy, onChange }: { label: string; value: number; unit: string; min: number; max: number; step: number; onChange: (value: number) => void }) {
   return (
-    <label className="flex flex-col gap-2 px-0.5">
-      <span className="flex items-baseline justify-between text-sm">
-        <span className="text-muted-foreground">{label}</span>
-        <span className="font-medium text-foreground tabular-nums">
-          {value}
-          {unit}
-        </span>
-      </span>
-      <input type="range" className="w-full accent-primary" min={min} max={max} step={stepBy} value={value} onChange={(event) => onChange(Number(event.target.value))} />
-    </label>
+    <>
+      <TextContent text={`${label}: ${value}${unit}`} />
+      <input type="range" aria-label={label} className="w-full accent-primary" min={min} max={max} step={stepBy} value={value} onChange={(event) => onChange(Number(event.target.value))} />
+    </>
   )
 }
 
@@ -483,7 +481,7 @@ function HeaterApp() {
   return (
     <Card>
       <CardHeader title="The cabin heater" />
-      <TextContent text="Slide the set point and the gap. The boiler only starts below the band and only stops above it." style="small" />
+      <TextContent text="The boiler only starts below the band and only stops above it." style="small" />
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full overflow-visible rounded-2xl bg-muted">
         <rect x={0} y={y(set + gap / 2)} width={width} height={y(set - gap / 2) - y(set + gap / 2)} className="fill-foreground/10" />
         <polyline points={line} className="fill-none stroke-primary" strokeWidth={2} strokeLinejoin="round" />

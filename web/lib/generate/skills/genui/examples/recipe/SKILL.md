@@ -65,7 +65,7 @@ export default function App() {
       ) : left > 0 ? (
         <>
           <div className="rounded-2xl bg-muted px-4 pt-5 pb-4 text-center">
-            <p className="font-mono text-5xl font-light text-foreground tabular-nums">{clock(left)}</p>
+            <p className="text-5xl font-light text-foreground tabular-nums">{clock(left)}</p>
             <p className="mt-1.5 text-[13px] text-muted-foreground">{left > 10 * 60 * 1000 ? "Beans in at 10:00" : "Beans in now"}</p>
             <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-background">
               <div className="h-full rounded-full bg-primary" style={{ width: `${(1 - left / SIMMER) * 100}%` }} />

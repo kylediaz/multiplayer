@@ -5,7 +5,7 @@ description: A real form that collects one reply per person and totals the answe
 
 # RSVP
 
-The answers so far come first: a headcount table per night, then who has replied. Then the form, under a heavy "Your reply" line: a name field, a switch per night, a switch for kids, a note. Send and Can't make it are a column of bars. After sending, the form becomes a thank-you callout. The draft is local; the reply is shared.
+The answers so far come first: a headcount table per night, then who has replied. Then the form: a name field, a switch per night, a switch for kids, a note. Send and Can't make it are a column of bars. After sending, the form becomes a thank-you callout. The draft is local; the reply is shared.
 
 ## React
 
@@ -64,7 +64,6 @@ export default function App() {
         <TextCallout variant="success" title={`Thanks, ${sent}`} description="Your reply is in. Everyone sees it now." />
       ) : (
         <>
-          <TextContent text="Your reply" style="large-heavy" />
           <input className={field} value={name} placeholder="Your name" onChange={(event) => setName(event.target.value)} />
           <ListBlock header="Which nights work">
             {nights.map((night) => (

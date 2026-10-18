@@ -36,7 +36,7 @@ summary = KVList([{label: "Distance", value: @Format(miles, "number", 0) + " mi,
 map = Map(@Each(trip, "s", MapMarker(s.label, s.lat, s.lng, null, s.icon)), true, $stop, 300)
 picked = @Find(trip, "label", $stop)
 here = TextCallout("info", picked.label + ", " + picked.place, picked.note)
-stops = ListBlock(@Each(trip, "s", ListItem(s.label, s.place, null, s.miles > 0 ? s.miles + " mi" : "Start", @Set($stop, s.label))), "Tap a stop")`
+stops = ListBlock(@Each(trip, "s", ListItem(s.label, s.place, null, s.miles > 0 ? s.miles + " mi" : "Start", @Set($stop, s.label))), "Stops")`
 
 const cabinsProgram = `$cabin = "Pine Lodge"
 root = Card([header, compare, map, choose, photo, cost, pitch])
@@ -122,7 +122,7 @@ const heater = `$temp = 68
 $heating = false
 root = Card([header, lede, sim, controls, status, body])
 header = CardHeader("The cabin heater")
-lede = TextContent("Nudge the room and watch the boiler hold its band.", "small")
+lede = TextContent("The boiler only starts below the band and only stops above it.", "small")
 sim = Svg([band, track, ${[64, 66, 68, 70, 72].map((t) => `tick${t}`).join(", ")}, onLabel, offLabel, dot, reading], "0 0 320 110")
 band = Rect(${tx(67)}, 34, ${tx(69) - tx(67)}, 42, "info", null, null, 0.12, 8)
 track = Line(20, 55, 300, 55, "muted", 2)
@@ -145,7 +145,7 @@ button{font:600 15px Inter,system-ui,sans-serif;width:280px;padding:12px;border:
 p{margin:0;font-size:15px;min-height:22px}
 </style>
 <canvas id="w" width="560" height="560"></canvas>
-<p id="r">Tap spin.</p>
+<p id="r"></p>
 <button id="b">Spin</button>
 <script>
 const names=${JSON.stringify(dishCrew)};
@@ -164,9 +164,8 @@ requestAnimationFrame(tick)};
 draw();
 </script>`
 
-const dishes = `root = Card([header, lede, wheel, rule])
+const dishes = `root = Card([header, wheel, rule])
 header = CardHeader("Who does the dishes")
-lede = TextContent("Spin it once. No rerolls.", "small")
 wheel = HtmlView(${v(wheelHtml)}, null, "Dish wheel")
 rule = TextCallout("neutral", "House rule", "Whoever cooked is off the wheel tonight.")`
 

@@ -41,19 +41,21 @@ Every id passed to those hooks must exist in schema.keys. A list is an ordered c
 
 Shared state is already persisted. Never seed a list in an effect, in a loop, or during render. A draft someone is typing is local state. What they committed is shared. Counts and totals are derived. Call hooks once at the top of a component, never in a map or a condition. To edit one item with hooks, render a child component for it and call the hooks there.
 
-- Every list starts empty. Rows the ask already knows, like ingredients or restaurants, are written in the source. What people do to them is shared: a list holding one item per ticked row or per vote.
+- Every list starts empty. Rows the ask itself spells out, like a recipe's ingredients or the restaurants to vote on, are written in the source. What people do to them is shared: a list holding one item per ticked row or per vote. Rows the owner keeps up to date, like jobs on a résumé, projects, or upcoming shows, are a list they add to, and each opens its own page to edit.
 - A vote, a claim, or anything that is "mine" is a list item with a voter field. The device's id is `const [me] = useState(() => crypto.randomUUID())`. Never use useId for this: it is the same on every phone.
 - Two people bumping one number at once lose a count. Insert one item per vote and count the items.
 - A shared timer is a number register holding the time it ends, `Date.now() + minutes * 60000`. Every phone counts down to the same moment. Tick a local `now` with setInterval in an effect while it runs.
 - A decision is a register. When it is set, the screen shows the result for everyone, with a quiet way to undo it.
+- Anything with parts, like a job with a role, a company, and dates, is a list item with a field per part. Never make people type a format the code parses, like pipes or one entry per line, and never cap a collection at a fixed number of slots.
+- When the app answers from what someone picks, offer the choices with a select or Toggle rows. Do not match free text against a few known words.
 
 ## Screen components
 
-From "ui", use these components. Do not invent a second design system, and do not wrap them in a flex row of your own. Card already stacks its children in a column with a gap. Each child is the width of the card.
+From "ui", use these components. Do not invent a second design system, and do not wrap them in a flex row of your own. Do not draw your own cards, borders, headings, or buttons: a repeated thing, like a card on a board or an option to vote for, is a ListItem or Toggle row in a ListBlock. Card already stacks its children in a column with a gap. Each child is the width of the card.
 
 - Card. The page root. A vertical stack.
 - CardHeader. title: string. One large light title. It is not a toolbar.
-- TextContent. text: string. style: "small" | "default" | "large" | "small-heavy" | "large-heavy". small is the muted line. large-heavy is a bold line. An empty list is this, not a blank control.
+- TextContent. text: string. style: "small" | "default" | "large" | "small-heavy" | "large-heavy". small is the muted line. large-heavy is a bold line for a result, not a heading. An empty list is one short small line in place of the ListBlock, never inside it. Every line of text outside a drawing is a TextContent. Do not write a p, span, or heading with its own size, weight, or color. A sentence that needs a link is the one exception: a `<p className="m-0 text-[15px] leading-snug text-foreground">` with the link underlined inside it.
 - TextCallout. variant: "neutral" | "info" | "success" | "warning" | "danger". title: string. description?: string. A muted rounded row with an icon. It does not contain a button. It is the place for a result, a confirmation, or a warning.
 - ListBlock. header?: string. A rounded group. Children are ListItem and Toggle rows, full width, with a hairline between them. header is a small label above the group.
 - ListItem. title: string. subtitle?: string. leading?: an icon name or { src, alt }. trailing?: string. onClick?: () => void. A full-width row. onClick adds a chevron and means navigation. It is not a checkbox, and it is not a place to put a Button.
@@ -73,6 +75,7 @@ const field = "w-full rounded-2xl bg-muted px-4 py-3 text-[15px] text-foreground
 ```
 
 - input for a word or a number. A number uses inputMode="decimal". Enter commits.
+- When a button cannot act yet for a reason that is not plain from the empty fields, like a date outside the range, show the reason as a TextCallout above it. Never ignore a press silently.
 - textarea with `${field} min-h-24 resize-none` for a note.
 - select for picking a person or a category. A native select puts its arrow against the edge and indents its text, so turn the native arrow off and draw one inside the padding:
 
@@ -84,11 +87,11 @@ const field = "w-full rounded-2xl bg-muted px-4 py-3 text-[15px] text-foreground
   <svg viewBox="0 0 24 24" aria-hidden className="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 fill-none stroke-muted-foreground stroke-2 [stroke-linecap:round] [stroke-linejoin:round]"><path d="m6 9 6 6 6-6" /></svg>
 </div>
 ```
-- A slider is `<input type="range" className="w-full accent-primary" />` under a line with the label on the left and the value on the right.
+- A slider is `<input type="range" aria-label={label} className="w-full accent-primary" />` under a TextContent with the label and the value, like "Set point: 68°F".
 
 ## Pages
 
-A row that opens something is a ListItem with onClick that sets a local id. When the id is set, return a different Card for that item: its fields bound with useText on the item path, then a column of Buttons with Done first, and Remove as a tertiary destructive bar last.
+A row that opens something is a ListItem with onClick that sets a local id, so the whole row is the target. A Table cell is never the way in. The row shows a title and a short subtitle. Long text, like notes or updates, shows only on the item's page. When the id is set, return a different Card for that item: its fields bound with useText on the item path, then a column of Buttons with Done first, and Remove as a tertiary destructive bar last.
 
 ## Drawing
 
@@ -96,7 +99,7 @@ There are no chart or map components, but the source can draw. Use theme classes
 
 - A bar is a div: a `h-2 rounded-full bg-background` track holding a `bg-primary` fill whose width is a percentage. Put a set of bars in one `rounded-2xl bg-muted px-4 py-4` block, a row per bar with the label, the track, and the count.
 - A chart is an inline svg with a viewBox about 320 wide, `className="w-full rounded-2xl bg-muted"`. Lines use `fill-none stroke-primary`. Bands use `fill-foreground/10`. Labels use `fill-muted-foreground text-[10px]`.
-- A big number, like a countdown, is `font-mono text-5xl font-light tabular-nums` centered in a muted rounded block.
+- A big number, like a countdown, is `text-5xl font-light tabular-nums` centered in a muted rounded block.
 - Code is `<pre className="m-0 overflow-x-auto rounded-2xl bg-muted px-4 py-3.5 font-mono text-[13px] leading-[1.6]"><code>{code}</code></pre>`. There is no math renderer. Write a formula as plain text.
 
 Money is `value.toLocaleString("en-US", { style: "currency", currency: "USD" })`.

@@ -14,7 +14,11 @@ ${languageLine(mode)}
 
 Build the smallest Card that does what was asked. Start with CardHeader. Do not add filters, counts, or a control on every row unless the user asked for them.
 
-font-sans is Inter and font-mono is Geist Mono. Those faces are already loaded. Do not import font files. Do not hardcode a hex color.`
+Write the words the way someone would for their own group. The title names the thing, like "Groceries" or "Book club". Who it is for and why shape what the app does, not its words. Put a line under the title only when it holds a fact people need, like a date, a place, or hours. Do not write taglines, mottos, sign-offs, or a sentence that restates the title or explains the screen. Empty states and placeholders are a few plain words, like "No questions yet." or "Add a book".
+
+CardHeader is the only heading. A group is named by its ListBlock header. Do not add bold section lines, eyebrows, or uppercase or letterspaced labels.
+
+font-sans is Inter and font-mono is Geist Mono. Those faces are already loaded. Do not import font files. font-mono is only for code. Numbers stay in Inter with tabular-nums. Do not hardcode a hex color.`
 }
 
 export function instructions(mode: GenerationMode): string {

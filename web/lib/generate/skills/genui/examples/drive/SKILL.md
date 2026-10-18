@@ -19,5 +19,5 @@ summary = KVList([{label: "Distance", value: @Format(miles, "number", 0) + " mi,
 map = Map(@Each(trip, "s", MapMarker(s.label, s.lat, s.lng, null, s.icon)), true, $stop, 300)
 picked = @Find(trip, "label", $stop)
 here = TextCallout("info", picked.label + ", " + picked.place, picked.note)
-stops = ListBlock(@Each(trip, "s", ListItem(s.label, s.place, null, s.miles > 0 ? s.miles + " mi" : "Start", @Set($stop, s.label))), "Tap a stop")
+stops = ListBlock(@Each(trip, "s", ListItem(s.label, s.place, null, s.miles > 0 ? s.miles + " mi" : "Start", @Set($stop, s.label))), "Stops")
 ```
