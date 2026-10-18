@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 import { isLocal } from "@/lib/optimize/local"
 import { optimizeStore } from "@/lib/optimize/store"
-import { OpenUICandidate } from "./openui"
+import { OpenUICandidate } from "../../openui"
 
 export default async function CandidateView({ params }: PageProps<"/optimize/view/[id]">) {
   if (!isLocal()) notFound()
@@ -19,7 +19,7 @@ export default async function CandidateView({ params }: PageProps<"/optimize/vie
         {candidate.lang === "react" ? (
           <iframe
             title={candidate.title}
-            sandbox="allow-scripts"
+            sandbox="allow-scripts allow-same-origin"
             src={`/api/optimize/candidates/${id}/index.html`}
             className="block h-full w-full border-0 bg-white"
           />

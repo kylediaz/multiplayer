@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import { useLayoutEffect, useRef, useState } from "react"
 import { cn } from "cn"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -16,6 +16,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type { Choice } from "@/lib/optimize/store"
+import { OpenUICandidate } from "./openui"
 
 export type ReviewSide = {
   id: string
@@ -23,7 +24,6 @@ export type ReviewSide = {
   lang: DocumentLang
   promptVersion: string
   source: string
-  screenshotUrl: string | null
 }
 
 type Review = { pairId: string; task: string; a: ReviewSide; b: ReviewSide }
@@ -167,13 +167,13 @@ function Prompt({ text }: { text: string }) {
 function Candidate({ side }: { side: ReviewSide }) {
   return (
     <section className="flex min-w-0 flex-col items-center gap-2">
-      <Screenshot side={side} />
-      <div className="flex items-center">
+      <div className="flex w-[280px] items-center justify-end">
         <SourceDialog side={side} />
         <Link href={`/optimize/view/${side.id}`} target="_blank" className={buttonVariants({ variant: "ghost", size: "sm", className: "text-muted-foreground" })}>
-          Live
+          Full size
         </Link>
       </div>
+      <Phone side={side} />
     </section>
   )
 }
@@ -181,7 +181,7 @@ function Candidate({ side }: { side: ReviewSide }) {
 function SourceDialog({ side }: { side: ReviewSide }) {
   return (
     <Dialog>
-      <DialogTrigger render={<Button type="button" variant="ghost" size="sm" />}>Source</DialogTrigger>
+      <DialogTrigger render={<Button type="button" variant="ghost" size="sm" className="text-muted-foreground" />}>Source</DialogTrigger>
       <DialogContent className="flex h-[85vh] flex-col sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>{side.title}</DialogTitle>
@@ -202,46 +202,29 @@ function SourceDialog({ side }: { side: ReviewSide }) {
   )
 }
 
-function Screenshot({ side }: { side: ReviewSide }) {
-  const [url, setUrl] = useState(side.screenshotUrl)
-  const [error, setError] = useState<string | null>(null)
+const PHONE_WIDTH = 390
+const PHONE_HEIGHT = 844
+const PREVIEW_WIDTH = 280
+const SCALE = PREVIEW_WIDTH / PHONE_WIDTH
 
-  useEffect(() => {
-    if (side.screenshotUrl) return
-    let live = true
-    fetch("/api/optimize/screenshots", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ candidateId: side.id }),
-    })
-      .then(async (response) => {
-        const body = (await response.json()) as { url?: string; error?: string }
-        if (!live) return
-        if (response.ok && body.url) setUrl(body.url)
-        else setError(body.error ?? "The screenshot failed.")
-      })
-      .catch(() => live && setError("The screenshot failed."))
-    return () => {
-      live = false
-    }
-  }, [side.id, side.screenshotUrl])
-
+function Phone({ side }: { side: ReviewSide }) {
   return (
-    <div className="w-full max-w-[280px] overflow-hidden rounded-[1.75rem] bg-white shadow-sm ring-1 ring-foreground/10">
-      {url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={url} alt={side.title} className="block h-auto w-full" />
-      ) : (
-        <div className="flex aspect-[390/844] items-center justify-center p-6 text-center text-sm text-muted-foreground">
-          {error ? (
-            <span className="text-destructive">{error}</span>
-          ) : (
-            <span className="flex items-center gap-2">
-              <Spinner /> Capturing
-            </span>
-          )}
-        </div>
-      )}
+    <div
+      className="relative shrink-0 overflow-hidden rounded-[1.75rem] bg-white shadow-sm ring-1 ring-foreground/10"
+      style={{ width: PREVIEW_WIDTH, height: PHONE_HEIGHT * SCALE }}
+    >
+      <div className="absolute top-0 left-0 origin-top-left" style={{ width: PHONE_WIDTH, height: PHONE_HEIGHT, transform: `scale(${SCALE})` }}>
+        {side.lang === "react" ? (
+          <iframe
+            title={side.title}
+            sandbox="allow-scripts allow-same-origin"
+            src={`/api/optimize/candidates/${side.id}/index.html`}
+            className="block h-full w-full border-0 bg-white"
+          />
+        ) : (
+          <OpenUICandidate source={side.source} />
+        )}
+      </div>
     </div>
   )
 }

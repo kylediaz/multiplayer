@@ -74,7 +74,16 @@ const field = "w-full rounded-2xl bg-muted px-4 py-3 text-[15px] text-foreground
 
 - input for a word or a number. A number uses inputMode="decimal". Enter commits.
 - textarea with `${field} min-h-24 resize-none` for a note.
-- select with the same class for picking a person or a category.
+- select for picking a person or a category. A native select puts its arrow against the edge and indents its text, so turn the native arrow off and draw one inside the padding:
+
+```tsx
+<div className="relative">
+  <select className={`${field} appearance-none pr-10`} value={payer} onChange={(event) => setPayer(event.target.value)}>
+    {people.map((name) => <option key={name} value={name}>{name}</option>)}
+  </select>
+  <svg viewBox="0 0 24 24" aria-hidden className="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 fill-none stroke-muted-foreground stroke-2 [stroke-linecap:round] [stroke-linejoin:round]"><path d="m6 9 6 6 6-6" /></svg>
+</div>
+```
 - A slider is `<input type="range" className="w-full accent-primary" />` under a line with the label on the left and the value on the right.
 
 ## Pages

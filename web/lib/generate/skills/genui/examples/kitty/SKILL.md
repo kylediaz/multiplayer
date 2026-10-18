@@ -91,13 +91,18 @@ export default function App() {
       )}
       <input className={field} value={what} placeholder="What was it" onChange={(event) => setWhat(event.target.value)} />
       <input className={field} value={amount} inputMode="decimal" placeholder="How much" onChange={(event) => setAmount(event.target.value)} />
-      <select className={field} value={payer} onChange={(event) => setPayer(event.target.value)}>
-        {people.map((name) => (
-          <option key={name} value={name}>
-            Paid by {name}
-          </option>
-        ))}
-      </select>
+      <div className="relative">
+        <select className={`${field} appearance-none pr-10`} value={payer} onChange={(event) => setPayer(event.target.value)}>
+          {people.map((name) => (
+            <option key={name} value={name}>
+              Paid by {name}
+            </option>
+          ))}
+        </select>
+        <svg viewBox="0 0 24 24" aria-hidden className="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 fill-none stroke-muted-foreground stroke-2 [stroke-linecap:round] [stroke-linejoin:round]">
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </div>
       <Buttons>
         <Button label="Add" onClick={add} />
       </Buttons>

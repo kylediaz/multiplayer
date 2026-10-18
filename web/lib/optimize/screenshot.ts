@@ -13,7 +13,7 @@ const shared = globalThis as typeof globalThis & {
   optimizeCaptures?: Map<string, Promise<string>>
 }
 
-export function screenshotUrl(candidateId: string): string {
+function screenshotUrl(candidateId: string): string {
   return `/api/optimize/candidates/${candidateId}/screenshot.png`
 }
 

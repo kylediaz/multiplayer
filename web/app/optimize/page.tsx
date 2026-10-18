@@ -1,8 +1,6 @@
-import { existsSync } from "node:fs"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { isLocal } from "@/lib/optimize/local"
-import { screenshotUrl } from "@/lib/optimize/screenshot"
 import { optimizeStore, pendingPairs } from "@/lib/optimize/store"
 import { Optimize, type ReviewSide } from "./review"
 
@@ -29,7 +27,6 @@ export default async function OptimizePage({ searchParams }: PageProps<"/optimiz
       lang: candidate.lang,
       promptVersion: candidate.promptVersion,
       source: store.readCandidateFile(id, "source.txt") ?? "",
-      screenshotUrl: existsSync(store.screenshotFile(id)) ? screenshotUrl(id) : null,
     }
   }
   const a = current ? side(current.a) : null

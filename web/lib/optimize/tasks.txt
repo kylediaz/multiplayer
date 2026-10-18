@@ -1,0 +1,101 @@
+# Pairwise preference tasks for /optimize. One task per line.
+# Generate with: pnpm optimize --file web/lib/optimize/tasks.txt
+
+# Personal and landing pages
+A personal landing page for Kyle Diaz, a software engineer in San Francisco who works at Chroma and is trying to eat every burrito
+A portfolio page for Mei Tanaka, a product designer in Brooklyn. Show three recent projects, a short bio, and a way to get in touch.
+A homepage for a one-person ceramics studio in Asheville that sells mugs and takes commissions
+A link-in-bio page for a climbing coach with links to booking, a YouTube channel, and a gear list
+A landing page for a neighborhood bakery called Rise. Hours, the daily bread list, and where to find it.
+A wedding website for Priya and Sam, September 14 in Sonoma, with the schedule, travel notes, and an RSVP
+A page for a jazz trio's upcoming shows this month
+A speaker page for a conference talk titled "Retrieval is a database problem"
+A launch page for a small Mac app that renames screenshots automatically. Include pricing and a download button.
+A page for a volunteer beach cleanup on Saturday morning, with what to bring and a sign-up
+A résumé page for a staff backend engineer with ten years of experience at payments companies
+A page for a weekly newsletter about urban cycling with a subscribe field and three past issues
+A small nonprofit page for a community fridge in Oakland explaining what to donate and what not to
+A personal reading log page that shows what I'm reading now, the last five books I finished, and a rating for each
+
+# Shared, collaborative apps
+A shared grocery list for three roommates
+A chore rotation for a four-person apartment that shows whose turn it is this week
+A potluck sign-up where guests claim a dish category and write what they're bringing
+A packing list for a family camping trip that everyone can check off
+A team standup board with yesterday, today, and blockers for each person
+A retro board with went well, didn't go well, and action items, where people can add cards and vote
+A poll for where the team should go for lunch on Friday
+A movie night vote between five films, with a short reason field for each vote
+A shared expense splitter for a ski trip with four friends that shows who owes whom
+A book club tracker with the current book, the meeting date, and discussion questions people can add
+A carpool planner for soccer practice: which parent drives each day of the week
+A gift exchange where people add wishlist items and others can quietly claim them
+A baby feeding and diaper log that two parents update through the night
+A plant watering schedule for an office with twelve plants
+A shared trip itinerary for four days in Lisbon that friends can edit
+A wedding seating chart where guests are assigned to tables
+A habit tracker for a couple: daily walk, no phone after 10pm, and cook at home
+A shared reading list for a research group with links and who added each paper
+A tournament bracket for an eight-person ping pong tournament
+A sign-up sheet for office hours with fifteen-minute slots
+
+# Tools and calculators
+A tip calculator that splits the bill between a number of people
+A recipe scaler that converts a pancake recipe from four servings to any number
+A pomodoro timer with a work and a break length
+A countdown to New Year's Eve
+A unit converter for cooking: cups, grams, tablespoons, and milliliters
+A mortgage calculator with price, down payment, rate, and term
+A character and word counter for a tweet draft
+A dice roller for tabletop games with d4 through d20
+A two-player scoreboard with a reset button
+A time zone converter for a team in San Francisco, New York, London, and Bangalore
+A loan payoff comparison between paying the minimum and paying an extra $200 a month
+A simple metronome with tempo control
+A coffee brew ratio calculator for pour-over
+
+# Data and status displays
+A weather card for San Francisco showing today and the next five days
+A flight status card for UA 857 from SFO to Shanghai, delayed 40 minutes
+An order tracking page for a package that's out for delivery
+A receipt for a dinner at a ramen shop with items, tax, and tip
+An invoice from a freelance illustrator to a magazine for three spot illustrations
+A transit card showing the next three trains at a BART station
+A status page for an API with four services, one of them degraded
+A changelog for a developer tool with the last four releases
+A leaderboard for a company step challenge
+A nutrition label for a granola bar
+A sports standings table for a six-team rec basketball league
+A personal finance summary for October: income, spending by category, and savings rate
+A dashboard for a small online shop: today's orders, revenue this week, and low stock items
+A class schedule for a high school student, Monday through Friday
+A restaurant menu for a taqueria with prices and dietary markers
+
+# Forms and flows
+A contact form for a freelance photographer
+A job application for a barista position
+A bug report form with steps to reproduce, expected and actual behavior, and severity
+A feedback survey after a workshop with ratings and one open question
+A table reservation form for a restaurant: date, time, party size, and notes
+An onboarding checklist for a new engineer's first week
+An appointment booking form for a dog groomer
+A pet adoption application with household details
+A form for requesting time off with dates and a reason
+
+# Content
+A blog post layout for an essay titled "Notes on building with small models"
+A recipe page for weeknight chicken tikka masala with ingredients and steps
+An FAQ for a coworking space
+A pricing table with three plans for a note-taking app
+A product comparison between three e-bikes
+A short guide to setting up a sourdough starter, day by day
+A documentation page for a CLI command with flags and examples
+A city guide card for a weekend in Mexico City: where to eat, what to see, and how to get around
+A team page for a six-person startup with roles and one line about each person
+A press kit page for an indie game with a description, key facts, and contact
+
+# Longer, detailed requests
+A personal site for Ana Ruiz, a data journalist at a nonprofit newsroom in Chicago. She writes about housing and transit. The page should feel quiet and editorial: her name, a one-line description, a short paragraph about her work, her three most recent stories with dates and publications, and links to email, Bluesky, and her newsletter. No photos.
+A shared planning page for a family reunion at a lake house the second weekend of July. Show the address and arrival details, a list of who is coming with how many people, a meal plan for Friday dinner through Sunday breakfast where people can claim meals, and a list of things to bring that people can check off.
+A dashboard for a solo indie hacker tracking three side projects. For each project show monthly recurring revenue, active users, and the next task. Let them add a note to any project. Keep it calm and readable, not a wall of charts.
+An event page for a free outdoor screening of Spirited Away in Dolores Park on Friday at 8pm. Include what to bring, a short note about the film, accessibility details, and a way to say you're coming that shows how many people have said yes.
