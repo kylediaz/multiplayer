@@ -93,11 +93,13 @@ function viewHtml(parentOrigin: string): string {
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Geist+Mono:wght@100..900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./main.css">
 <style>
+  html, body { margin: 0; }
   html {
     --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
     --font-geist-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
     -webkit-font-smoothing: antialiased;
   }
+  #root { box-sizing: border-box; padding: 1.5rem 1rem 1rem; }
 </style>
 </head>
 <body>

@@ -12,8 +12,10 @@ type OpenUIViewProps = {
 export function OpenUIView({ source }: OpenUIViewProps) {
   if (!source) return <p className="p-6 text-sm text-muted-foreground">This view has no saved source.</p>
   return (
-    <div className="h-full overflow-auto bg-background p-4 text-foreground">
-      <Renderer response={source} library={kitLibrary} isStreaming={false} />
+    <div className="h-full overflow-auto bg-background text-foreground">
+      <div className="p-4">
+        <Renderer response={source} library={kitLibrary} isStreaming={false} />
+      </div>
     </div>
   )
 }

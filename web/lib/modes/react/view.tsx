@@ -14,11 +14,7 @@ type ReactViewProps = {
 const emptySubscribe = () => () => {}
 
 export function ReactView({ document }: ReactViewProps) {
-  return (
-    <div className="h-full md:px-4 md:pt-6 md:pb-4">
-      <CodeFrame document={document} />
-    </div>
-  )
+  return <CodeFrame document={document} />
 }
 
 function CodeFrame({ document }: { document: DataplaneDocument }) {
@@ -125,7 +121,7 @@ function CodeFrame({ document }: { document: DataplaneDocument }) {
           ? `${dataplaneUrl}/v1/documents/${document.id}/views/current/index.html?parent=${encodeURIComponent(parentOrigin)}`
           : undefined
       }
-      className="h-full w-full border-0 bg-white"
+      className="block h-full w-full border-0 bg-white"
     />
   )
 }

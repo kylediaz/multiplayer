@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { PromptForm } from "@/components/doc/prompt-form"
 
 export default function Home() {
@@ -8,6 +9,9 @@ export default function Home() {
         <p className="text-sm text-balance text-muted-foreground">
           Describe an app. Generate it as React, as OpenUI, or let the model decide. Anyone with the link edits it together.
         </p>
+        <Link href="/showcase" className="text-sm font-medium text-foreground underline underline-offset-4">
+          See the example apps
+        </Link>
       </header>
       <PromptForm />
     </main>
