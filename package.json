@@ -9,6 +9,7 @@
     "lint": "eslint && knip",
     "test": "vitest run",
     "api": "bun api/index.ts",
+    "optimize": "bun web/lib/optimize/cli.ts",
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
@@ -56,6 +57,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.8",
     "knip": "^6.39.0",
+    "playwright-core": "^1.64.1",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^5.0.3"

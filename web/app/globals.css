@@ -129,5 +129,6 @@
   html {
     @apply font-sans;
     font-size: 16px;
+    overscroll-behavior-y: none;
   }
 }

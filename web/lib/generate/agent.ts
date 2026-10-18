@@ -11,7 +11,7 @@ import { repoRoot } from "../repo-root"
 import { instructions } from "./prompts"
 import { readSkill } from "./skills"
 
-const MODEL = "gpt-6.1-sol"
+export const MODEL = "gpt-6.1-sol"
 
 const textKey = z.object({ kind: z.literal("text") })
 const registerKey = z.object({
