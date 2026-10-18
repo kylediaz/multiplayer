@@ -1,6 +1,6 @@
 import { defineComponent } from "@openuidev/react-lang"
 import { z } from "zod"
-import { ChipsView, TabsView } from "./media.client"
+import { TabsView } from "./media.client"
 import { screenChildren } from "./screen"
 
 const imageProp = z.object({ src: z.string(), alt: z.string().optional() })
@@ -52,13 +52,6 @@ export const Bubbles = defineComponent({
       ))}
     </div>
   ),
-})
-
-export const Chips = defineComponent({
-  name: "Chips",
-  props: z.object({ labels: z.array(z.string()) }),
-  description: "Horizontal filter pills. Tapping a chip asks for this screen again, filtered to that label. No action prop. Put the active category first.",
-  component: ChipsView,
 })
 
 export const TabItem = defineComponent({

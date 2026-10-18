@@ -19,22 +19,22 @@ export function Table({ columns, rows }: { columns: string[]; rows: unknown[][] 
     return String(value ?? "")
   }
   return (
-    <div className="w-full min-w-0 overflow-x-auto rounded-[14px] border border-border">
+    <div className="w-full min-w-0 overflow-x-auto rounded-2xl bg-muted">
       <table className="w-full border-collapse text-sm leading-normal text-foreground">
         <thead>
           <tr>
             {head.map((column, index) => (
-              <th key={index} className={classes("border-b border-border bg-muted px-4 py-[11px] text-left text-[13px] font-medium whitespace-nowrap", numeric[index] && "text-right tabular-nums")}>
+              <th key={index} className={classes("px-4 py-2.5 text-left text-sm font-medium whitespace-nowrap text-muted-foreground", numeric[index] && "text-right tabular-nums")}>
                 {column}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="[&>tr:last-child>td]:border-b-0">
+        <tbody>
           {body.map((row, rowIndex) => (
-            <tr key={rowIndex} className="hover:bg-muted/70">
+            <tr key={rowIndex} className="border-t border-border">
               {head.map((_, column) => (
-                <td key={column} className={classes("border-b border-border px-4 py-[13px] text-left align-middle", numeric[column] && "text-right whitespace-nowrap tabular-nums")}>
+                <td key={column} className={classes("px-4 py-2.5 text-left align-middle", numeric[column] && "text-right whitespace-nowrap tabular-nums")}>
                   {cell(row[column])}
                 </td>
               ))}

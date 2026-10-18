@@ -249,12 +249,6 @@ export const samples: ComponentSample[] = [
   },
   {
     group: "Media & Social",
-    name: "Chips",
-    description: "Horizontal filter pills. The first label starts selected.",
-    source: screen(["filters"], [call("filters", "Chips", [`[${[q("All"), q("Nearby"), q("Open now"), q("Top rated")].join(", ")}]`])]),
-  },
-  {
-    group: "Media & Social",
     name: "Tabs",
     description: "Switches between panes on tap, without a round trip.",
     source: screen(

@@ -5,7 +5,7 @@ import { HtmlView } from "./components/html-view"
 import { KVList, ListBlock, ListItem, Toggle } from "./components/lists"
 import { MapMarker, MapView } from "./components/map/map"
 import { Markdown } from "./components/markdown"
-import { Bubbles, Chips, ImageBlock, PhotoGrid, TabItem, Tabs } from "./components/media"
+import { Bubbles, ImageBlock, PhotoGrid, TabItem, Tabs } from "./components/media"
 import { setScreenChild } from "./components/screen"
 import { Card, CardHeader, TextCallout, TextContent } from "./components/structure"
 import { Svg, svgComponents } from "./components/svg"
@@ -22,7 +22,6 @@ setScreenChild(
     ImageBlock.ref,
     PhotoGrid.ref,
     Bubbles.ref,
-    Chips.ref,
     Tabs.ref,
     MapView.ref,
     HtmlView.ref,
@@ -46,7 +45,7 @@ const groups: ComponentGroup[] = [
   },
   {
     name: "Media & Social",
-    components: ["ImageBlock", "PhotoGrid", "Bubbles", "Chips", "Tabs", "TabItem", "Map", "MapMarker", "HtmlView"],
+    components: ["ImageBlock", "PhotoGrid", "Bubbles", "Tabs", "TabItem", "Map", "MapMarker", "HtmlView"],
     notes: ["Map takes MapMarker places: label, latitude, longitude. route draws the road path in marker order."],
   },
   {
@@ -81,7 +80,6 @@ export const openuiLibrary = createLibrary({
     ImageBlock,
     PhotoGrid,
     Bubbles,
-    Chips,
     TabItem,
     Tabs,
     MapView,

@@ -9,6 +9,7 @@ import { parseGeneration, type Generation } from "../parse-generation"
 import type { RevisionFile } from "../modes/mode"
 import { repoRoot } from "../repo-root"
 import { instructions } from "./prompts"
+import { readSkill } from "./skills"
 
 const MODEL = "gpt-6.1-sol"
 
@@ -64,6 +65,13 @@ export async function generateDocument(prompt: string, mode: GenerationMode): Pr
       } satisfies OpenAILanguageModelResponsesOptions,
     },
     tools: {
+      loadSkill: tool({
+        description: "Load a skill to get specialized instructions",
+        inputSchema: z.object({
+          name: z.string().describe("The skill name to load"),
+        }),
+        execute: async ({ name }) => readSkill(mode, name),
+      }),
       submit: tool({
         description: "Submit the finished app. If the result lists problems, fix the app and submit again.",
         inputSchema: mode === "decide" ? decideInput : mode === "openui" ? openuiInput : reactInput,
@@ -91,7 +99,7 @@ export async function generateDocument(prompt: string, mode: GenerationMode): Pr
     },
     stopWhen: [
       ({ steps }) => steps.at(-1)?.toolResults.some((result) => submitted(result.output)) ?? false,
-      isStepCount(4),
+      isStepCount(6),
     ],
   })
 

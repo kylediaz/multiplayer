@@ -2,6 +2,7 @@ import { defineComponent } from "@openuidev/react-lang";
 import katex from "katex";
 import { Fragment, type ReactNode } from "react";
 import { z } from "zod";
+import { Table } from "../../common/kit/table";
 import "katex/dist/katex.min.css";
 
 function webUrl(value: string): string | null {
@@ -151,11 +152,6 @@ const headingClass: Record<number, string> = {
   4: "md-h text-base leading-snug font-semibold text-foreground",
 };
 
-const tableScroll = "w-full min-w-0 overflow-x-auto rounded-[14px] border border-border";
-const table = "w-full border-collapse text-sm leading-normal text-foreground";
-const tableHead = "border-b border-border bg-muted px-4 py-[11px] text-left text-[13px] font-medium whitespace-nowrap";
-const tableCell = "border-b border-border px-4 py-[13px] text-left align-middle";
-
 function MarkdownBlocks({ text }: { text: string }) {
   return (
     <>
@@ -165,7 +161,7 @@ function MarkdownBlocks({ text }: { text: string }) {
           case "p":
             return <p key={k}>{inline(b.text, k)}</p>;
           case "quote":
-            return <blockquote key={k} className="rounded-r-xl border-l-[3px] border-border bg-muted px-4 py-3 text-foreground">{inline(b.text, k)}</blockquote>;
+            return <blockquote key={k} className="rounded-2xl bg-muted px-3.5 py-3 text-foreground">{inline(b.text, k)}</blockquote>;
           case "h":
             return (
               <div key={k} role="heading" aria-level={b.level + 1} className={headingClass[b.level] ?? headingClass[4]}>
@@ -176,7 +172,7 @@ function MarkdownBlocks({ text }: { text: string }) {
             return <MathTex key={k} tex={b.text} display />;
           case "code":
             return (
-              <pre key={k} className="m-0 overflow-x-auto rounded-md bg-muted px-4 py-3.5 font-mono text-[13px] leading-[1.6]">
+              <pre key={k} className="m-0 overflow-x-auto rounded-2xl bg-muted px-4 py-3 font-mono text-[13px] leading-relaxed">
                 <code>{b.text}</code>
               </pre>
             );
@@ -194,18 +190,11 @@ function MarkdownBlocks({ text }: { text: string }) {
           }
           case "table":
             return (
-              <div key={k} className={tableScroll}>
-                <table className={table}>
-                  <thead>
-                    <tr>{b.head.map((h, j) => <th key={j} className={tableHead}>{inline(h, `${k}-h${j}`)}</th>)}</tr>
-                  </thead>
-                  <tbody className="[&>tr:last-child>td]:border-b-0">
-                    {b.rows.map((r, j) => (
-                      <tr key={j} className="hover:bg-muted/70">{r.map((c, m) => <td key={m} className={tableCell}>{inline(c, `${k}-${j}-${m}`)}</td>)}</tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <Table
+                key={k}
+                columns={b.head}
+                rows={b.rows.map((r, j) => r.map((c, m) => inline(c, `${k}-${j}-${m}`)))}
+              />
             );
         }
       })}
