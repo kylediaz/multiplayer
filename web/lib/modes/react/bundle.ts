@@ -123,7 +123,6 @@ async function bundleCss(source: string): Promise<string> {
     const input = [
       `@import ${JSON.stringify(path.join(webDir, "app/globals.css"))};`,
       `@source ${JSON.stringify(path.join(webDir, "lib/modes/common/kit"))};`,
-      `@source ${JSON.stringify(path.join(webDir, "components/ui"))};`,
       `@source ${JSON.stringify(file)};`,
     ].join("\n")
     const result = await postcss([tailwindcss()]).process(input, { from: path.join(webDir, "app/view.css") })

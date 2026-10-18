@@ -2,8 +2,16 @@ import { defineComponent } from "@openuidev/react-lang";
 import katex from "katex";
 import { Fragment, type ReactNode } from "react";
 import { z } from "zod";
-import { webUrl } from "./style";
 import "katex/dist/katex.min.css";
+
+function webUrl(value: string): string | null {
+  try {
+    const protocol = new URL(value.trim()).protocol;
+    return protocol === "http:" || protocol === "https:" ? value.trim() : null;
+  } catch {
+    return null;
+  }
+}
 
 // A small Markdown renderer. Prose is React elements. Math is KaTeX's own HTML.
 // Inline: **bold**, *italic*, ~~strike~~, `code`, [text](https://...), $math$.
@@ -205,13 +213,17 @@ function MarkdownBlocks({ text }: { text: string }) {
   );
 }
 
+function MarkdownView({ text }: { text: string }) {
+  return (
+    <div className="flex min-w-0 flex-col text-[1em] leading-[1.65] wrap-anywhere text-foreground [&_strong]:font-semibold [&>*]:m-0 [&>*+*]:mt-3 [&>p+:is(ul,ol)]:mt-1.5 [&>*+.md-h]:mt-[26px] [&>.md-h+*]:mt-2">
+      <MarkdownBlocks text={text} />
+    </div>
+  );
+}
+
 export const Markdown = defineComponent({
   name: "Markdown",
   props: z.object({ text: z.string() }),
   description: "Prose with headings, lists, quotes, code and tables.",
-  component: ({ props }) => (
-    <div className="flex min-w-0 flex-col text-base leading-[1.65] wrap-anywhere text-foreground [&_strong]:font-semibold [&>*]:m-0 [&>*+*]:mt-3 [&>p+:is(ul,ol)]:mt-1.5 [&>*+.md-h]:mt-[26px] [&>.md-h+*]:mt-2">
-      <MarkdownBlocks text={typeof props.text === "string" ? props.text : ""} />
-    </div>
-  ),
+  component: ({ props }) => <MarkdownView text={typeof props.text === "string" ? props.text : ""} />,
 });

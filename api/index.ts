@@ -98,6 +98,7 @@ function viewHtml(parentOrigin: string): string {
     --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
     --font-geist-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
     -webkit-font-smoothing: antialiased;
+    font-size: 16px;
   }
   #root { box-sizing: border-box; padding: 1.5rem 1rem 1rem; }
 </style>

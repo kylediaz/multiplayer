@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic"
 import type { ReactNode } from "react"
 import { cn } from "cn"
+import { rootFontSize } from "@/lib/modes/common/kit"
 import { openuiSources } from "./openui-apps"
 import { BooksApp, BriefApp, CabinsApp, GroceriesApp, HeaterApp, RecipeApp, RsvpApp, ScheduleApp, TonightApp } from "./react-apps"
 import { showcaseMeta, type ShowcaseKind } from "./data"
@@ -65,7 +66,7 @@ function Frame({ children }: { children: ReactNode }) {
     <div className="relative aspect-[390/844] h-[68dvh] shrink-0 overflow-hidden rounded-[2.5rem] bg-background shadow-sm ring-1 ring-foreground/10">
       <div
         className="absolute top-0 left-0 origin-top-left overflow-auto p-5"
-        style={{ width: phoneWidth, height: phoneHeight, transform: "scale(calc(68dvh / 844px))" }}
+        style={{ width: phoneWidth, height: phoneHeight, fontSize: rootFontSize, transform: "scale(calc(68dvh / 844px))" }}
       >
         {children}
       </div>

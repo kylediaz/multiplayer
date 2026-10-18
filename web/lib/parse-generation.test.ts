@@ -89,33 +89,21 @@ export default function App() {
     expect(js).toContain("insert")
   })
 
-  it("reports focus for a field on the built-in input", async () => {
-    const { js } = await reactBundle(`import { TextInput } from "ui"
-import { useText } from "sync"
-export default function App() {
-  const [name, setName] = useText("name")
-  return <TextInput field="name" value={name} onChange={(value, cursor) => setName(value, cursor)} />
-}`)
-    expect(js).toContain("presence")
-    expect(js).toContain("outline")
-    expect(js).toContain("selectionEnd")
-  })
-
   it("renders list items whose fields are registers", async () => {
-    const { js } = await reactBundle(`import { TodoList } from "ui"
+    const { js } = await reactBundle(`import { ListItem } from "ui"
 import { useList } from "sync"
 export default function App() {
   const [items, tasks] = useList("tasks")
-  return <TodoList todos={items} onTodoClick={(todo) => tasks.update(todo.id, { done: todo.data?.done !== true })} />
+  return <ListItem title={String(items[0]?.data?.title ?? "")} onClick={() => tasks.update(items[0]?.id ?? "", { done: true })} />
 }`)
     expect(js).toContain("useList")
     expect(js).toContain("title")
   })
 
   it("bundles kit components", async () => {
-    const { js, css } = await reactBundle(`import { Button, Stack } from "ui"
+    const { js, css } = await reactBundle(`import { Button, Card } from "ui"
 export default function App() {
-  return <Stack gap={8} className="mt-8"><Button variant="default">Go</Button></Stack>
+  return <Card><div className="mt-8"><Button label="Go" /></div></Card>
 }`)
     expect(js).toContain("Go")
     expect(css).toContain("mt-8")

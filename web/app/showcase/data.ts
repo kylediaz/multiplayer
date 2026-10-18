@@ -68,6 +68,34 @@ export const heater = {
 }`,
 } as const
 
+export const heaterMarkdown = [
+  "The boiler at Pine Lodge short-cycles if it chases the set point. It doesn't. It holds a deadband and keeps doing what it was already doing.",
+  "",
+  "Call the set point $S$ and the gap $g$. Heat starts below the band and stops above it.",
+  "",
+  "$$",
+  heater.on,
+  "$$",
+  "",
+  "$$",
+  heater.off,
+  "$$",
+  "",
+  "```",
+  heater.code,
+  "```",
+  "",
+  "At $S = 68$ and $g = 2$, the boiler kicks on at 67°F and cuts out at 69°F.",
+  "",
+  "The coast back down takes about",
+  "",
+  "$$",
+  heater.coast,
+  "$$",
+  "",
+  "where $C$ is the heat the room holds and $P$ is how fast the boiler puts it back. A wider gap means fewer starts, and a longer wait.",
+].join("\n")
+
 export const groceryItems = [
   { name: "Oat milk", price: 6, done: false },
   { name: "Sourdough", price: 7, done: false },

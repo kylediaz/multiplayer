@@ -1,5 +1,6 @@
 import { action, defineComponent } from "@openuidev/react-lang"
 import { z } from "zod"
+import { Buttons as ButtonsView } from "../../common/kit/buttons"
 import { ButtonView } from "./buttons.client"
 
 function nodes(value: unknown): unknown[] {
@@ -30,16 +31,7 @@ export const Buttons = defineComponent({
     direction: z.enum(["row", "column"]).optional(),
   }),
   description: 'Group of Button components. direction: "row" (default) or "column".',
-  component: ({ props, renderNode }) => {
-    const column = props.direction === "column"
-    return (
-      <div className={column ? "flex flex-col gap-2" : "flex gap-2"}>
-        {nodes(props.buttons).map((button, index) => (
-          <div key={index} className={column ? undefined : "min-w-0 flex-1"}>
-            {renderNode(button)}
-          </div>
-        ))}
-      </div>
-    )
-  },
+  component: ({ props, renderNode }) => (
+    <ButtonsView direction={props.direction}>{nodes(props.buttons).map((button) => renderNode(button))}</ButtonsView>
+  ),
 })

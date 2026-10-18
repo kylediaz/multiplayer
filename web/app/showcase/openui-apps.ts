@@ -3,7 +3,7 @@ import {
   apartments,
   cabinRows,
   dinnerFacts,
-  heater,
+  heaterMarkdown,
   games,
   groceryItems,
   nights,
@@ -228,37 +228,10 @@ function cabins(): string {
 }
 
 function heaterNote(): string {
-  const body = [
-    "The boiler at Pine Lodge short-cycles if it chases the set point. It doesn't. It holds a deadband and keeps doing what it was already doing.",
-    "",
-    "Call the set point $S$ and the gap $g$. Heat starts below the band and stops above it.",
-    "",
-    "$$",
-    heater.on,
-    "$$",
-    "",
-    "$$",
-    heater.off,
-    "$$",
-    "",
-    "```",
-    heater.code,
-    "```",
-    "",
-    "At $S = 68$ and $g = 2$, the boiler kicks on at 67°F and cuts out at 69°F.",
-    "",
-    "The coast back down takes about",
-    "",
-    "$$",
-    heater.coast,
-    "$$",
-    "",
-    "where $C$ is the heat the room holds and $P$ is how fast the boiler puts it back. A wider gap means fewer starts, and a longer wait.",
-  ].join("\n")
   return program([
     call("root", "Card", [refs(["header", "body"])]),
     call("header", "CardHeader", [q("The cabin heater")]),
-    call("body", "Markdown", [q(body)]),
+    call("body", "Markdown", [q(heaterMarkdown)]),
   ])
 }
 

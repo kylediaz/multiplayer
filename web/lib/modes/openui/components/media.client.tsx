@@ -2,6 +2,7 @@
 
 import { useTriggerAction, type ComponentRenderProps } from "@openuidev/react-lang"
 import { useState } from "react"
+import { Tabs } from "../../common/kit/tabs"
 import type { TabsProps } from "./media"
 
 type TabElement = TabsProps["items"][number]
@@ -38,27 +39,16 @@ function tabProps(item: TabElement | TabElement["props"]): TabElement["props"] |
 }
 
 export function TabsView({ props, renderNode }: ComponentRenderProps<TabsProps>) {
-  const [active, setActive] = useState(0)
   const items = props.items.flatMap((item) => {
     const tab = tabProps(item)
     return tab ? [tab] : []
   })
-  const current = items[Math.min(active, Math.max(items.length - 1, 0))]
   return (
-    <div>
-      <div className="flex gap-0.5 rounded-xl bg-muted p-0.5">
-        {items.map((item, index) => (
-          <button
-            key={item.label ?? index}
-            type="button"
-            className={`min-w-0 flex-1 truncate rounded-xl px-1 py-1.5 text-center text-[13px] font-semibold text-foreground ${index === active ? "bg-background" : ""}`}
-            onClick={() => setActive(index)}
-          >
-            {item.label ?? `Tab ${index + 1}`}
-          </button>
-        ))}
-      </div>
-      <div className="mt-3 flex flex-col gap-3.5">{current ? renderNode(current.children) : null}</div>
-    </div>
+    <Tabs
+      tabs={items.map((item, index) => ({
+        label: item.label ?? `Tab ${index + 1}`,
+        children: renderNode(item.children),
+      }))}
+    />
   )
 }

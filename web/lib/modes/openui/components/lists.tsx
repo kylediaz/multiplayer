@@ -1,18 +1,9 @@
 import { action, defineComponent } from "@openuidev/react-lang"
-import type { ReactNode } from "react"
 import { z } from "zod"
+import { KVList as KVListView, ListBlock as ListBlockView } from "../../common/kit/lists"
 import { ListItemView, ToggleView } from "./lists.client"
 
 const imageProp = z.object({ src: z.string(), alt: z.string().optional() })
-
-function Group({ header, children }: { header?: string | null; children: ReactNode }) {
-  return (
-    <section>
-      {header ? <p className="mb-1.5 ml-4 text-xs font-semibold tracking-wide text-muted-foreground uppercase">{header}</p> : null}
-      <div className="overflow-hidden rounded-2xl bg-muted">{children}</div>
-    </section>
-  )
-}
 
 function nodes(value: unknown): unknown[] {
   return Array.isArray(value) ? value.filter(Boolean) : []
@@ -36,14 +27,18 @@ export const ListItem = defineComponent({
   component: ListItemView,
 })
 
+const toggleProps = z.object({
+  title: z.string(),
+  on: z.boolean(),
+  icon: z.string().optional().nullable(),
+  subtitle: z.string().optional().nullable(),
+})
+
+export type ToggleProps = z.infer<typeof toggleProps>
+
 export const Toggle = defineComponent({
   name: "Toggle",
-  props: z.object({
-    title: z.string(),
-    on: z.boolean(),
-    icon: z.string().optional().nullable(),
-    subtitle: z.string().optional().nullable(),
-  }),
+  props: toggleProps,
   description: "Switch row for a setting. It flips on tap and does not take an action. icon: optional icon name.",
   component: ToggleView,
 })
@@ -55,15 +50,7 @@ export const ListBlock = defineComponent({
     header: z.string().optional().nullable(),
   }),
   description: "Grouped list, the main way to show rows. items: ListItem and Toggle rows. header: section label above the group.",
-  component: ({ props, renderNode }) => (
-    <Group header={props.header}>
-      {nodes(props.items).map((item, index) => (
-        <div key={index} className={index > 0 ? "border-t border-border" : undefined}>
-          {renderNode(item)}
-        </div>
-      ))}
-    </Group>
-  ),
+  component: ({ props, renderNode }) => <ListBlockView header={props.header}>{nodes(props.items).map((item) => renderNode(item))}</ListBlockView>,
 })
 
 export const KVList = defineComponent({
@@ -73,14 +60,5 @@ export const KVList = defineComponent({
     header: z.string().optional().nullable(),
   }),
   description: "Label and value rows for a summary: an order, a reservation, nutrition, or a profile.",
-  component: ({ props }) => (
-    <Group header={props.header}>
-      {(props.rows ?? []).filter(Boolean).map((row, index) => (
-        <div key={index} className={`flex items-baseline justify-between gap-3.5 px-4 py-2.5 ${index > 0 ? "border-t border-border" : ""}`}>
-          <span className="text-sm text-muted-foreground">{row.label}</span>
-          <span className="min-w-0 flex-1 text-right text-sm font-medium text-foreground tabular-nums">{row.value}</span>
-        </div>
-      ))}
-    </Group>
-  ),
+  component: ({ props }) => <KVListView header={props.header} rows={(props.rows ?? []).filter(Boolean)} />,
 })
