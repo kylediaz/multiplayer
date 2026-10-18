@@ -17,7 +17,6 @@ export async function POST(request: Request) {
     return Response.json({ error: "The prompt is missing." }, { status: 400 })
   }
   if (!prompt) return Response.json({ error: "Enter a prompt." }, { status: 400 })
-  if (prompt.length > 4000) return Response.json({ error: "The prompt is too long." }, { status: 400 })
 
   let generated
   try {
