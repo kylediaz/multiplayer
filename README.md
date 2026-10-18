@@ -8,11 +8,11 @@ Describe an app. Generate it as React, as OpenUI, or let the model decide, then 
 
 The landing page is a prompt. React and OpenUI are explicit, and Decide lets the agent choose. Create document runs that agent. It submits a title, a schema, and source. The shell compiles the source and opens the document.
 
-## A generated view
+## Showcase
 
-![A histogram of the letters in its own title](docs/example.png)
+![Example apps in React and OpenUI](docs/showcase.png)
 
-This one was asked to count the letters in its own sentence. The chart is the generated view, inside an iframe under the document header. Live means the shell is connected. This view stores nothing: its schema has no keys, and the bars are computed from the sentence.
+The showcase is a row of example apps in phone frames. React is on the left, OpenUI on the right. These are the same kinds of views the landing prompt generates, already compiled and laid out side by side.
 
 ## How a document behaves
 
